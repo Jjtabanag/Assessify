@@ -1,4 +1,6 @@
 # Assessify
+### Backend - Django Rest Framework
+### Frontend - React.js Framework
 
 ## How to Run
 1. **Create and Activate Virtual Environment**
@@ -8,19 +10,19 @@
    ```
 
 2. **Install dependencies**
-  ```bash
-  pip install backend/requirements.txt
-  cd frontend
-  npm install 
-  ```
+   ```bash
+   pip install backend/requirements.txt
+   cd frontend
+   npm install 
+   ```
 
 3. **Run**
    Create two separate terminals
-   - for backend
+   - For backend
    ```bash
    py backend/manage.py runserver 
    ```
-   - for frontend
+   - For frontend
    ```bash
    cd frontend
    npm start
