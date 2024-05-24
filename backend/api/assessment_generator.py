@@ -1,18 +1,14 @@
-from dotenv import load_dotenv
 import openai
 import os
-import json
 
-from llama_index.llms import OpenAI
-from llama_index import VectorStoreIndex, SimpleDirectoryReader, ServiceContext, StorageContext, load_index_from_storage
+from llama_index.llms.openai import OpenAI
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
 
 class AssessmentGenerator:
     
     def __init__(self):
-        load_dotenv()
-        openai.api_key = os.getenv("OPENAI_API_KEY")
-        llm = OpenAI(model="gpt-4-1106-preview")
-        self.service_context = ServiceContext.from_defaults(llm=llm)
+        openai.api_key = os.environ["OPENAI_API_KEY"]
+        llm = OpenAI(model="gpt-3.5-turbo")
 
     def read_excluded_questions(self, file_path):
         if os.path.exists(file_path):
@@ -25,7 +21,7 @@ class AssessmentGenerator:
         with open(file_path, 'w') as f:
             f.write(questions)
 
-    def get_quiz(self, username, assessment_type, number_of_questions, learning_outcomes, lesson_path="", exclude_questions=False, index=None) -> dict:
+    def get_quiz(self, assessment_type, number_of_questions, learning_outcomes, lesson_path="", exclude_questions=False, index=None) -> dict:
         
         print("Generating Quiz...")
         print(f"Assessment Type: {assessment_type}")
@@ -200,7 +196,7 @@ class AssessmentGenerator:
 
         print("Generating Exam...")
 
-        os.makedirs(fr'media\{username}\lessons', exist_ok=True)
+        os.makedirs(fr'data\{username}\lessons', exist_ok=True)
         
         
         documents = SimpleDirectoryReader(lesson).load_data()
