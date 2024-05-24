@@ -173,7 +173,7 @@ class CreateAssessmentView(View):
                         learning_outcomes.append(s)
                     s.append(value)
                             
-        lesson_path = rf'api/media/{user.username}/lessons/{assessment_name}'
+        lesson_path = rf'data/{user.username}/lessons/{assessment_name}'
         if not os.path.exists(lesson_path):
             # If not, create it
             os.makedirs(lesson_path)
