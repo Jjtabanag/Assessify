@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import FileResponse, JsonResponse
 import json
 import re
 import os
@@ -113,7 +113,7 @@ class UserLoginView(APIView):
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
             print('Token:', token)
-            return Response({'status': 'success', 'message': 'User logged in', 'token': token.key}, status=202)
+            return Response({'status': 'success', 'message': 'User logged in', 'token': token.key, 'user': user.pk}, status=202)
         else:
             return Response({'status': 'error', 'message': 'Incorrect username/email or password'}, status=403)
 
@@ -350,8 +350,8 @@ class ViewAssessmentView(APIView):
 @method_decorator(login_required, name='dispatch')
 class AssessmentExportView(View):
     
-    def get(self, request, id):
-        user_id = id
+    def get(self, request):
+        user_id = request.GET.get('id')
         username = User.objects.get(user_id=user_id).username
         assessment_id = request.GET.get('as')
         file_format = request.GET.get('ff')
@@ -371,12 +371,13 @@ class AssessmentExportView(View):
                     'answer': q.answer
                 }
                 
-                if type == 'Multiple Choice':
+                if type == 'multiple choice':
                     # gets the list of data from the column 'option'
                     options = list(Option.objects.filter(question=q).values_list('option', flat=True))
                     question_data['options'] = options
                     option_answer = Option.objects.get(question=q, option_no=q.answer)
-                    question_data['answer'] = f'{chr(96 + option_answer.option_no)}. {option_answer}'
+                    formatted_answer = f'{chr(97 + option_answer.option_no).lower()}. {option_answer}'
+                    question_data['answer'] = formatted_answer
                     
                 question_data_list.append(question_data)
                 
@@ -424,13 +425,15 @@ class AssessmentExportView(View):
                         'answer': q.answer
                     }
                     
-                    if type == 'Multiple Choice':
+                    if type == 'multiple choice':
                         # gets the list of data from the column 'option'
                         options = list(Option.objects.filter(question=q).values_list('option', flat=True))
                         question_data['options'] = options
                         print(q.answer)
                         option_answer = Option.objects.get(question=q, option_no=q.answer)
-                        question_data['answer'] = f'{chr(97 + option_answer.option_no)}. {option_answer}'
+                        formatted_answer = f'{chr(97 + option_answer.option_no)}. {option_answer}'
+                        print("formatted answer: ", formatted_answer)
+                        question_data['answer'] = formatted_answer
                         
                     question_data_list.append(question_data)
                 
@@ -468,9 +471,9 @@ class AssessmentExportView(View):
         
         if file_format == 'pdf':
             # Create the zip file
-            file_path = rf'{username}\exports\{assessment.name}_assessment.zip'
+            file_path = rf'{settings.MEDIA_ROOT}\{username}\exports\{assessment.name}_assessment.zip'
             
-            with ZipFile(rf'{settings.MEDIA_ROOT}\{file_path}', 'w') as zip_object:
+            with ZipFile(file_path, 'w') as zip_object:
                 # Adding files to the zip file
                 assessment_file_name = ''
                 answer_key_file_name = ''
@@ -490,8 +493,10 @@ class AssessmentExportView(View):
                 zip_object.write(answer_key_file_path, os.path.basename(answer_key_file_path))
         
         elif file_format == 'word':
-            file_path = rf"{username}\exports\{assessment.name}_{assessment.type}.docx"
+            file_path = rf"backend\api\media\{username}\exports\{assessment.name}_{assessment.type}.docx"
         else:
-            file_path = rf"{username}\exports\{assessment.name}_{assessment.type}-gift.txt"
+            file_path = rf"backend\api\media\{username}\exports\{assessment.name}_{assessment.type}-gift.txt"
+        
+        print("File Path: " + file_path)
                         
-        return download_file(request, file_path)
+        return FileResponse(open(file_path, 'rb'))

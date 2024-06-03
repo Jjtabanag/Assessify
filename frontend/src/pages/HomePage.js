@@ -12,6 +12,8 @@ const ViewAssessmentsPage = () => {
   const [openCreatePrompt, setOpenCreatePrompt] = useState(false);
   const { user } = useContext(UserContext);
 
+  console.log('user:', user)
+
   const client = axios.create({
     baseURL: "http://localhost:8000",
     withCredentials: true,

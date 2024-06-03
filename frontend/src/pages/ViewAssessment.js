@@ -63,9 +63,9 @@ const ViewAssessment = () => {
     const form = e.target;
     const formData = new FormData(form);
 
-    for (let pair of formData.entries()) {
-        console.log('FormData: ' + pair[0] + ', '  + pair[1]);
-    }
+    // for (let pair of formData.entries()) {
+    //     console.log('FormData: ' + pair[0] + ', '  + pair[1]);
+    // }
 
     const tk = sessionStorage.getItem("token");
     console.log("token:", tk);
@@ -105,6 +105,67 @@ const ViewAssessment = () => {
       // Handle error, e.g., show an error message
     }
   };
+
+  const handleExport = async (format) => {
+    const tk = sessionStorage.getItem("token");
+    console.log("token:", tk);
+    setToken(tk);
+    if (!tk) {
+      console.error("Login required");
+      navigate("/login");
+      return;
+    }
+
+    const csrfToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrftoken"))
+      ?.split("=")[1];
+    if (csrfToken) {
+      setToken(csrfToken);
+    } else {
+      console.log(
+        "CSRF token not found. Please refresh the page and try again."
+      );
+    }
+
+    console.log("Downloading file...");
+
+    try {
+      const response = await client.get(`/assessment_export?id=${user.userData}&as=${id}&ff=${format}`, {
+        headers: {
+          Authorization: tk,
+        },
+        responseType: 'blob' // This is important
+      });
+    
+      // Create a blob URL
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+    
+      // Create a link element
+      const link = document.createElement('a');
+      link.href = url;
+    
+      // Set the file name and download it
+      if (format === 'pdf'){
+        link.setAttribute('download', `${assessment.name}.zip`);
+      }
+      else if (format === 'word') {
+        link.setAttribute('download', `${assessment.name}.docx`);
+      }
+      else if (format === 'gift') {
+        link.setAttribute('download', `${assessment.name}-gift.txt`);
+      }
+      
+      document.body.appendChild(link);
+      link.click();
+    
+      console.log("Successfully downloaded file");
+      // Handle success, e.g., show a success message or redirect
+    } catch (error) {
+      console.error("Error saving assessment:", error);
+      // Handle error, e.g., show an error message
+    }
+  }
 
   return (
     <>
@@ -159,30 +220,44 @@ const ViewAssessment = () => {
               <br />
               <br />
               <h3>
-                <a href={`/export-assessment?as=${id}&ff=pdf`}>
-                  {" "}
-                  EXPORT (to PDF){" "}
-                </a>
-                <a
-                  href={`/export-assessment?as=${id}&ff=word`}
-                  style={{ paddingLeft: "100px" }}
+                <button
+                  className="generic-button"
+                  onClick={() => handleExport('pdf')}
+                  style={{ 
+                    width: '200px',
+                    marginRight: '50px',
+                    padding: "50px 0px" 
+                  }}
                 >
-                  {" "}
-                  EXPORT (to WORD){" "}
-                </a>
-                <a
-                  href={`/export-assessment?as=${id}&ff=gift`}
-                  style={{ paddingLeft: "100px" }}
+                  EXPORT (to PDF)
+                </button>
+                <button
+                  className="generic-button"
+                  onClick={() => handleExport('word')}
+                  style={{ 
+                    width: '200px',
+                    marginRight: '50px',
+                    padding: "50px 0px" 
+                  }}
                 >
-                  {" "}
-                  EXPORT (to GIFT){" "}
-                </a>
+                  EXPORT (to WORD)
+                </button>
+                <button
+                  className="generic-button"
+                  onClick={() => handleExport('gift')}
+                  style={{ 
+                    width: '200px',
+                    marginRight: '50px',
+                    padding: "50px 0px"
+                  }}
+                >
+                  EXPORT (to GIFT)
+                </button>
                 <Link
                   to={`/view-assessment/${id}?action=edit`}
                   style={{ paddingLeft: "100px" }}
                 >
-                  {" "}
-                  EDIT{" "}
+                  EDIT
                 </Link>
               </h3>
             </div>

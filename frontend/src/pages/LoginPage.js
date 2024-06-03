@@ -68,6 +68,7 @@ const LoginPage = () => {
       if (response.status === 202) {
         console.log("Login successful");
         setUser({ isAuthenticated: true, userData: response.data.user });
+        console.log("user: ", response.data);
         sessionStorage.setItem("user", JSON.stringify(response.data.user));
         sessionStorage.setItem("token", response.data.token);
         navigate("/home");
