@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const ChooseFileType = () => {
-  return (
-    <div>
-        
-    </div>
-  )
-}
+  return <div></div>;
+};
 
-export default ChooseFileType
+export default ChooseFileType;

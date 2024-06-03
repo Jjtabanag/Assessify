@@ -174,3 +174,5 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 
 LOGIN_URL = '/login'
+
+

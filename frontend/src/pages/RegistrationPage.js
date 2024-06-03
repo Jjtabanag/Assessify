@@ -3,10 +3,24 @@ import { useState, useEffect, useContext, useNavigate } from "react";
 import Header from "../components/Header";
 import RegisterPopup from "../components/RegisterPopup";
 import UserContext from "../contexts/UserContext";
+import axios from "axios";
+import { useState, useEffect, useContext, useNavigate } from "react";
+import Header from "../components/Header";
+import RegisterPopup from "../components/RegisterPopup";
+import UserContext from "../contexts/UserContext";
 
 axios.defaults.withCredentials = true;
 
 const RegistrationPage = () => {
+  const [token, setToken] = useState();
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [repassword, setRepassword] = useState("");
+  const [error, setError] = useState("");
+  const [openPopup, setOpenPopup] = useState(false);
+  const { user } = useContext(UserContext);
+  const navigate = useNavigate();
   const [token, setToken] = useState();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -46,6 +60,30 @@ const RegistrationPage = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (user.isAuthenticated) {
+      navigate("/home");
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    const csrfToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrftoken"))
+      ?.split("=")[1];
+
+    if (csrfToken) {
+      setToken(csrfToken);
+    } else {
+      setError("CSRF token not found. Please refresh the page and try again.");
+    }
+
+    if (user) {
+      navigate("/home");
+      return;
+    }
+  }, []);
+
   const handleRegistration = async (event) => {
     event.preventDefault();
 
@@ -54,7 +92,36 @@ const RegistrationPage = () => {
       return;
     }
 
+    if (!token) {
+      setError("CSRF token not found. Please try again.");
+      return;
+    }
+
     try {
+      const response = await client.post(
+        "/register",
+        {
+          username: username,
+          email: email,
+          password: password,
+          repassword: repassword,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": token,
+          },
+        }
+      );
+      if (response.status === 201) {
+        // Registration successful, handle accordingly
+        setEmail("");
+        setUsername("");
+        setPassword("");
+        setRepassword("");
+        setOpenPopup(true);
+        console.log("Registration successful");
+      }
       const response = await client.post(
         "/register",
         {
@@ -172,5 +239,7 @@ const RegistrationPage = () => {
     </>
   );
 };
+
+export default RegistrationPage;
 
 export default RegistrationPage;

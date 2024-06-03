@@ -1,12 +1,20 @@
 @font-face {
   font-family: LGCafe;
   src: url(../public/assets/fonts/louis_george_cafe.ttf) format("truetype");
+  font-family: LGCafe;
+  src: url(../public/assets/fonts/louis_george_cafe.ttf) format("truetype");
 }
+
 @font-face {
   font-family: Signika;
   src: url(../public/assets/fonts/signika.ttf) format("truetype");
+  font-family: Signika;
+  src: url(../public/assets/fonts/signika.ttf) format("truetype");
 }
+
 @font-face {
+  font-family: Raleway;
+  src: url(../public/assets/fonts/raleway.ttf) format("truetype");
   font-family: Raleway;
   src: url(../public/assets/fonts/raleway.ttf) format("truetype");
 }

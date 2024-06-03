@@ -41,6 +41,7 @@ class Assessment(models.Model):
     no_of_questions = models.IntegerField(null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     date_created = models.DateField(auto_now_add=True)
+    generator = assessment_generator.AssessmentGenerator()
 
     def __str__(self):
         return self.name
@@ -52,14 +53,16 @@ class Assessment(models.Model):
         # ['section_lengths'] = list i.e. [5]
         # ['learning_outcomes'] = list i.e. ['l_outcome 1.1', 'l_outcome 1.2', 'l_outcome 1.3']
         
+
         s_type = section['section_types'][0]
         s_length = section['section_lengths'][0]
         l_outcomes = section['learning_outcomes']
         
         # API CALL
-        ai = assessment_generator.AssessmentGenerator()
-        quiz = ai.get_quiz(self.user.username, s_type, s_length, l_outcomes, self.lesson_path)
+        # quiz = self.generator.get_quiz(self.user.username, s_type, s_length, l_outcomes, self.lesson_path)
         
+        print(s_type)
+
         qt = Question_Type.objects.get(type=s_type)
         questions_list = {'questions': quiz['questions']}
         
@@ -121,8 +124,7 @@ class Assessment(models.Model):
             exam_format.append((s_type, s_length, l_outcome))
 
         # API CALL
-        ai = assessment_generator.AssessmentGenerator()
-        exam = ai.get_exam(self.user.username, exam_format, self.lesson_path)
+        # exam = self.generator.get_exam(self.user.username, exam_format, self.lesson_path)
         
         section_list = {'sections': exam['sections']}
         

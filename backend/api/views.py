@@ -131,6 +131,8 @@ class AssessmentsView(APIView):
 
     permission_classes = (permissions.IsAuthenticated, )
 
+    permission_classes = (permissions.IsAuthenticated, )
+
     def get(self, request):
         # Get the token from the Authorization header
         token_key = request.META.get('HTTP_AUTHORIZATION')
@@ -147,8 +149,6 @@ class AssessmentsView(APIView):
         print('User:', user)
         print('Assessments:', assessments)
         return JsonResponse({'username': username, 'assessments': assessments_json})
-
-
 @method_decorator(csrf_protect, name='dispatch')
 class CreateAssessmentView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -203,6 +203,11 @@ class CreateAssessmentView(APIView):
             with open(path, 'wb+') as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
+            file_name = file.name
+            path = os.path.join(lesson_path, file_name)
+            with open(path, 'wb+') as destination:
+                for chunk in file.chunks():
+                    destination.write(chunk)
         else:
             if not lesson:
                 lesson = ""
@@ -220,6 +225,7 @@ class CreateAssessmentView(APIView):
                                                no_of_questions=no_of_questions,
                                                user=user)
 
+
         if assessment_type == 'quiz':
             assessment.create_quiz(section)
         elif assessment_type == 'exam':
@@ -231,6 +237,90 @@ class ViewAssessmentView(APIView):
 
     def get(self, request, id):
         action = request.GET.get('page')
+        assessment = get_object_or_404(Assessment, id=id)
+        sections = Section.objects.filter(assessment=assessment)
+        assessment_data = []
+
+        for section in sections:
+            questions = Question.objects.filter(section=section).order_by('question_no')
+            section_data = {
+                'section': SectionSerializer(section).data,
+                'questions': []
+            }
+            for question in questions:
+                options = Option.objects.filter(question=question).order_by('option_no')
+                question_data = QuestionSerializer(question).data
+                question_data['options'] = OptionSerializer(options, many=True).data
+                section_data['questions'].append(question_data)
+            assessment_data.append(section_data)
+
+        return Response({'action': action, 'assessment': AssessmentSerializer(assessment).data,
+                         'assessment_data': assessment_data})
+    
+    def post(self, request, id):
+        data = request.data
+        question_id = data.get('question_id')
+        answer = data.get('answer')
+
+        if question_id is None or answer is None:
+            return Response({'error': 'Both question_id and answer are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            question = Question.objects.get(pk=question_id)
+        except Question.DoesNotExist:
+            return Response({'error': 'Question not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        question.answer = answer
+        question.save()
+
+        assessment = get_object_or_404(Assessment, id=id)
+        sections = Section.objects.filter(assessment=assessment)
+        assessment_data = []
+
+        for section in sections:
+            questions = Question.objects.filter(section=section).order_by('question_no')
+            section_data = {
+                'section': SectionSerializer(section).data,
+                'questions': [QuestionSerializer(question).data for question in questions]
+            }
+            assessment_data.append(section_data)
+
+        return Response({'action': 'edit', 'assessment': AssessmentSerializer(assessment).data,
+                         'assessment_data': assessment_data}, status=status.HTTP_200_OK)
+    
+# class ViewAssessmentView(APIView):
+
+#     permission_classes = (permissions.IsAuthenticated,)
+
+#     def get(self, request, *args, **kwargs):
+#         assessment_id = kwargs.get('id')
+#         try:
+#             assessment = Assessment.objects.get(id=assessment_id)
+#             sections = list(Section.objects.filter(assessment=assessment))
+#             question_types = []
+#             question_group = []
+#             # Populate question_types and question_group
+#             # ...
+#             # Return assessment data as JSON
+#             return JsonResponse({
+#                 'assessment': {
+#                     'name': assessment.name,
+#                     'description': assessment.description,
+#                     'type': assessment.type,
+#                     'id': assessment.id
+#                 },
+#                 'sections': sections,
+#                 'question_types': question_types,
+#                 'question_group': question_group
+#             })
+#         except Assessment.DoesNotExist:
+#             return JsonResponse({'error': 'Assessment not found'}, status=404)
+        
+#     # edit assessment generated
+#     def post(self, request):
+#         assessment_id = request.GET.get('as')
+#         for key, value in request.POST.items():
+#             k = key.split('_')
         assessment = get_object_or_404(Assessment, id=id)
         sections = Section.objects.filter(assessment=assessment)
         assessment_data = []
