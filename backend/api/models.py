@@ -53,6 +53,7 @@ class Assessment(models.Model):
         # ['section_lengths'] = list i.e. [5]
         # ['learning_outcomes'] = list i.e. ['l_outcome 1.1', 'l_outcome 1.2', 'l_outcome 1.3']
         
+
         s_type = section['section_types'][0]
         s_length = section['section_lengths'][0]
         l_outcomes = section['learning_outcomes']
@@ -60,6 +61,8 @@ class Assessment(models.Model):
         # API CALL
         # quiz = self.generator.get_quiz(self.user.username, s_type, s_length, l_outcomes, self.lesson_path)
         
+        print(s_type)
+
         qt = Question_Type.objects.get(type=s_type)
         questions_list = {'questions': quiz['questions']}
         
