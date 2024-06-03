@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 class AssessmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
-        fields = ['name', 'type', 'description', 'lesson_path', 'no_of_questions', 'user', 'date_created']
+        fields = ['id', 'name', 'type', 'description', 'lesson_path', 'no_of_questions', 'user', 'date_created']
     
     def create(self, validated_data):
         if(self.type == 'quiz'):
@@ -28,19 +28,19 @@ class QuestionTypeSerializer(serializers.ModelSerializer):
 class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
-        fields = ['section_no', 'name', 'description', 'length', 'type', 'assessment']
+        fields = ['id', 'section_no', 'name', 'description', 'length', 'type', 'assessment']
 
 class LearningOutcomesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Learning_Outcomes
-        fields = ['learning_outcome', 'section']
+        fields = ['id', 'learning_outcome', 'section']
 
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ['question_no', 'question', 'answer', 'section']
+        fields = ['id', 'question_no', 'question', 'answer', 'section']
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ['question', 'option_no', 'option']
+        fields = ['id', 'question', 'option_no', 'option']

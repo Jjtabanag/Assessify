@@ -58,8 +58,10 @@ class Assessment(models.Model):
         s_length = section['section_lengths'][0]
         l_outcomes = section['learning_outcomes']
         
+        print("s_type: ", s_type)
+        
         # API CALL
-        # quiz = self.generator.get_quiz(self.user.username, s_type, s_length, l_outcomes, self.lesson_path)
+        quiz = self.generator.get_quiz(s_type, s_length, l_outcomes, self.lesson_path)
         
         print(s_type)
 
@@ -124,7 +126,7 @@ class Assessment(models.Model):
             exam_format.append((s_type, s_length, l_outcome))
 
         # API CALL
-        # exam = self.generator.get_exam(self.user.username, exam_format, self.lesson_path)
+        exam = self.generator.get_exam(self.user.username, exam_format, self.lesson_path)
         
         section_list = {'sections': exam['sections']}
         

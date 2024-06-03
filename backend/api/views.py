@@ -255,202 +255,103 @@ class ViewAssessmentView(APIView):
             assessment_data.append(section_data)
 
         return Response({'action': action, 'assessment': AssessmentSerializer(assessment).data,
-                         'assessment_data': assessment_data})
+                            'assessment_data': assessment_data})
     
     def post(self, request, id):
         data = request.data
-        question_id = data.get('question_id')
-        answer = data.get('answer')
-
-        if question_id is None or answer is None:
-            return Response({'error': 'Both question_id and answer are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            question = Question.objects.get(pk=question_id)
-        except Question.DoesNotExist:
-            return Response({'error': 'Question not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        question.answer = answer
-        question.save()
-
-        assessment = get_object_or_404(Assessment, id=id)
-        sections = Section.objects.filter(assessment=assessment)
+        print("Data: ", data)
+        data_keys = list(data.keys())
+        print("Data keys: ", data_keys)
+        
         assessment_data = []
+        section_data = {}
+        question_data = {}
+        options_data = []
+        
+        for i in range(len(data_keys)):
+            info = data_keys[i].split('_')
+            currentID = info[1]
+            
+            if data_keys[i].startswith('assessmentname'):
+                assessment = Assessment.objects.get(pk=id)
+                assessment.name = data[data_keys[i]]
+            elif data_keys[i].startswith('assessmentdescription'):
+                assessment.description = data[data_keys[i]]
+                assessment.save()
+                
+            elif data_keys[i].startswith('sectionname'):
+                section_no = data_keys[i].split('_')[2]
+                section = Section.objects.get(pk=currentID, section_no=section_no)
+                section_data['name'] = data[data_keys[i]]
+            elif data_keys[i].startswith('sectiondescription'):
+                section.description = data[data_keys[i]]
+                section.save()
+                section_data['description'] = data[data_keys[i]]
+                
+            elif data_keys[i].startswith('question'):
+                question_no = data_keys[i].split('_')[2]
+                question = Question.objects.get(pk=currentID, question_no=question_no)
+                question_data['question'] = data[data_keys[i]]
+                
+            elif data_keys[i].startswith('answer'):
+                answer = data[data_keys[i]]
+                if answer in ['A', 'B', 'C', 'D']:
+                    answer = ord(answer.upper()) - ord('A')
+                question.answer = answer
+                question.save()
+                question_data['answer'] = answer
+                
+            elif data_keys[i].startswith('option'):
+                option_no = data_keys[i].split('_')[2]
+                option = Option.objects.get(pk=currentID, option_no=option_no)
+                option.option = data[data_keys[i]]
+                option.save()
+                option_serializer = OptionSerializer(option)
+                option_data = option_serializer.data
+                options_data.append(option_data)
+                
+            if i == len(data_keys) - 1 or data_keys[i + 1].startswith('sectionname'):
+                question_data['options'] = options_data
+                section_data['questions'] = question_data
+                assessment_data.append(section_data)
+                section_data = {}
+                question_data = {}
+                options_data = []
+                
+        print("Assessment Data: ", assessment_data)
 
-        for section in sections:
-            questions = Question.objects.filter(section=section).order_by('question_no')
-            section_data = {
-                'section': SectionSerializer(section).data,
-                'questions': [QuestionSerializer(question).data for question in questions]
-            }
-            assessment_data.append(section_data)
+        # if question_id is None or answer is None:
+        #     return Response({'error': 'Both question_id and answer are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # try:
+        #     question = Question.objects.get(pk=question_id)
+        # except Question.DoesNotExist:
+        #     return Response({'error': 'Question not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # question.answer = answer
+        # question.save()
+
+        # assessment = get_object_or_404(Assessment, id=id)
+        # sections = Section.objects.filter(assessment=assessment)
+        # assessment_data = []
+
+        # for section in sections:
+        #     questions = Question.objects.filter(section=section).order_by('question_no')
+        #     section_data = {
+        #         'section': SectionSerializer(section).data,
+        #         'questions': [QuestionSerializer(question).data for question in questions]
+        #     }
+        #     assessment_data.append(section_data)
 
         return Response({'action': 'edit', 'assessment': AssessmentSerializer(assessment).data,
-                         'assessment_data': assessment_data}, status=status.HTTP_200_OK)
-    
-# class ViewAssessmentView(APIView):
-
-#     permission_classes = (permissions.IsAuthenticated,)
-
-#     def get(self, request, *args, **kwargs):
-#         assessment_id = kwargs.get('id')
-#         try:
-#             assessment = Assessment.objects.get(id=assessment_id)
-#             sections = list(Section.objects.filter(assessment=assessment))
-#             question_types = []
-#             question_group = []
-#             # Populate question_types and question_group
-#             # ...
-#             # Return assessment data as JSON
-#             return JsonResponse({
-#                 'assessment': {
-#                     'name': assessment.name,
-#                     'description': assessment.description,
-#                     'type': assessment.type,
-#                     'id': assessment.id
-#                 },
-#                 'sections': sections,
-#                 'question_types': question_types,
-#                 'question_group': question_group
-#             })
-#         except Assessment.DoesNotExist:
-#             return JsonResponse({'error': 'Assessment not found'}, status=404)
+                            'assessment_data': assessment_data}, status=status.HTTP_200_OK)
         
-#     # edit assessment generated
-#     def post(self, request):
-#         assessment_id = request.GET.get('as')
-#         for key, value in request.POST.items():
-#             k = key.split('_')
-        assessment = get_object_or_404(Assessment, id=id)
-        sections = Section.objects.filter(assessment=assessment)
-        assessment_data = []
-
-        for section in sections:
-            questions = Question.objects.filter(section=section).order_by('question_no')
-            section_data = {
-                'section': SectionSerializer(section).data,
-                'questions': []
-            }
-            for question in questions:
-                options = Option.objects.filter(question=question).order_by('option_no')
-                question_data = QuestionSerializer(question).data
-                question_data['options'] = OptionSerializer(options, many=True).data
-                section_data['questions'].append(question_data)
-            assessment_data.append(section_data)
-
-        return Response({'action': action, 'assessment': AssessmentSerializer(assessment).data,
-                         'assessment_data': assessment_data})
-    
-    def post(self, request, id):
-        data = request.data
-        question_id = data.get('question_id')
-        answer = data.get('answer')
-
-        if question_id is None or answer is None:
-            return Response({'error': 'Both question_id and answer are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            question = Question.objects.get(pk=question_id)
-        except Question.DoesNotExist:
-            return Response({'error': 'Question not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        question.answer = answer
-        question.save()
-
-        assessment = get_object_or_404(Assessment, id=id)
-        sections = Section.objects.filter(assessment=assessment)
-        assessment_data = []
-
-        for section in sections:
-            questions = Question.objects.filter(section=section).order_by('question_no')
-            section_data = {
-                'section': SectionSerializer(section).data,
-                'questions': [QuestionSerializer(question).data for question in questions]
-            }
-            assessment_data.append(section_data)
-
-        return Response({'action': 'edit', 'assessment': AssessmentSerializer(assessment).data,
-                         'assessment_data': assessment_data}, status=status.HTTP_200_OK)
-    
-# class ViewAssessmentView(APIView):
-
-#     permission_classes = (permissions.IsAuthenticated,)
-
-#     def get(self, request, *args, **kwargs):
-#         assessment_id = kwargs.get('id')
-#         try:
-#             assessment = Assessment.objects.get(id=assessment_id)
-#             sections = list(Section.objects.filter(assessment=assessment))
-#             question_types = []
-#             question_group = []
-#             # Populate question_types and question_group
-#             # ...
-#             # Return assessment data as JSON
-#             return JsonResponse({
-#                 'assessment': {
-#                     'name': assessment.name,
-#                     'description': assessment.description,
-#                     'type': assessment.type,
-#                     'id': assessment.id
-#                 },
-#                 'sections': sections,
-#                 'question_types': question_types,
-#                 'question_group': question_group
-#             })
-#         except Assessment.DoesNotExist:
-#             return JsonResponse({'error': 'Assessment not found'}, status=404)
-        
-#     # edit assessment generated
-#     def post(self, request):
-#         assessment_id = request.GET.get('as')
-#         for key, value in request.POST.items():
-#             k = key.split('_')
-            
-#             if k[0] == 'assessmentname':
-#                 assessment = Assessment.objects.get(pk=k[1])
-#                 assessment.name = value
-#                 assessment.save()
-                
-#             elif k[0] == 'assessmentdescription':
-#                 assessment = Assessment.objects.get(pk=k[1])
-#                 assessment.description = value
-#                 assessment.save()
-            
-#             elif k[0] == 'sectiondescription':
-#                 section = Section.objects.get(pk=k[1])
-#                 section.description = value
-#                 section.save()
-            
-#             elif k[0] == 'question':
-#                 question = Question.objects.get(pk=k[1])
-#                 question.question = value
-#                 question.save()
-            
-#             elif k[0] == 'answerwc':
-#                 question = Question.objects.get(pk=k[1])
-#                 # converts the letter to the number equivalent
-#                 number = ord(value.split('.')[0]) - ord('A') + 1
-#                 question.answer = number
-#                 question.save()
-                
-#             elif k[0] == 'answer':
-#                 question = Question.objects.get(pk=k[1])
-#                 question.answer = value
-#                 question.save()
-            
-#             elif k[0] == 'option':
-#                 option = Option.objects.get(pk=k[1])
-#                 option.option = value
-#                 option.save()
-            
-#         return redirect(reverse('view_assessment') + '?' + urlencode({'as': assessment_id, 'page': 'view'}))
-
-# exports assessment        
+# exports assessment
 @method_decorator(login_required, name='dispatch')
 class AssessmentExportView(View):
     
-    def get(self, request):
-        user_id = request.session['_auth_user_id']
+    def get(self, request, id):
+        user_id = id
         username = User.objects.get(user_id=user_id).username
         assessment_id = request.GET.get('as')
         file_format = request.GET.get('ff')
@@ -477,7 +378,7 @@ class AssessmentExportView(View):
                     option_answer = Option.objects.get(question=q, option_no=q.answer)
                     question_data['answer'] = f'{chr(96 + option_answer.option_no)}. {option_answer}'
                     
-                question_data_list.append(question_data)   
+                question_data_list.append(question_data)
                 
             question_dict['questions'] = question_data_list
             
@@ -488,15 +389,15 @@ class AssessmentExportView(View):
                 if there is a custom file naming convention
                 
                 Converter.quiz_to_pdf(assessment=question_dict,
-                                      username=username, 
-                                      assessment_id=assessment_id, 
-                                      type=type, 
-                                      assessment_name=assessment.name)
+                                        username=username, 
+                                        assessment_id=assessment_id, 
+                                        type=type, 
+                                        assessment_name=assessment.name)
                 Converter.quiz_answer_key(assessment=question_dict,
-                                          username=username, 
-                                          assessment_id=assessment_id, 
-                                          type=type, 
-                                          assessment_name=assessment.name)
+                                            username=username, 
+                                            assessment_id=assessment_id, 
+                                            type=type, 
+                                            assessment_name=assessment.name)
                 """
             elif file_format == 'gift':
                 Converter.quiz_to_gift(json_data=question_dict, name=assessment.name, username=username)
@@ -531,7 +432,7 @@ class AssessmentExportView(View):
                         option_answer = Option.objects.get(question=q, option_no=q.answer)
                         question_data['answer'] = f'{chr(97 + option_answer.option_no)}. {option_answer}'
                         
-                    question_data_list.append(question_data)   
+                    question_data_list.append(question_data)
                 
                 section_data['questions'] = question_data_list
                 section_list.append(section_data)
@@ -545,13 +446,13 @@ class AssessmentExportView(View):
                 """
                 if there is custom file naming convention
                 Converter.exam_to_pdf(exam=exam_dict, 
-                                      username=username, 
-                                      assessment_id=assessment_id, 
-                                      assessment_name=assessment.name)
+                                        username=username, 
+                                        assessment_id=assessment_id, 
+                                        assessment_name=assessment.name)
                 Converter.exam_answer_key(exam=exam_dict, 
-                                          username=username, 
-                                          assessment_id=assessment_id, 
-                                          assessment_name=assessment.name)
+                                            username=username, 
+                                            assessment_id=assessment_id, 
+                                            assessment_name=assessment.name)
                 """
             elif file_format == 'gift':
                 Converter.exam_to_gift(exam=exam_dict, name=assessment.name, username=username)

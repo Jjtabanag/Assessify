@@ -1,8 +1,10 @@
+import json
 import openai
 import os
 
 from llama_index.llms.openai import OpenAI
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
+from dotenv import load_dotenv
 
 class AssessmentGenerator:
     

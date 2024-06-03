@@ -1,6 +1,6 @@
-import { useEffect, useState, useContext } from "react";
-import { useLocation, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import UserContext from "../contexts/UserContext";
 
@@ -42,17 +42,15 @@ const ViewAssessment = () => {
           },
         });
 
-        console.log("Assessment data:", response.data);
-
         setAssessment(response.data.assessment);
         setAssessmentData(response.data.assessment_data);
       } catch (error) {
         console.error("Error fetching assessment data:", error);
       }
     };
-
+    console.log("Assessment Data: " + assessmentData)
     fetchAssessmentData();
-  }, [id]);
+  }, [id, action]);
 
   useEffect(() => {
     if (!user.isAuthenticated) {
@@ -64,6 +62,10 @@ const ViewAssessment = () => {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
+
+    for (let pair of formData.entries()) {
+        console.log('FormData: ' + pair[0] + ', '  + pair[1]);
+    }
 
     const tk = sessionStorage.getItem("token");
     console.log("token:", tk);
@@ -96,6 +98,7 @@ const ViewAssessment = () => {
       });
 
       console.log("Assessment saved:", response.data);
+      navigate(`/view-assessment/19?action=view`);
       // Handle success, e.g., show a success message or redirect
     } catch (error) {
       console.error("Error saving assessment:", error);
@@ -120,19 +123,18 @@ const ViewAssessment = () => {
                 {assessmentData.map(({ section, questions }) => (
                   <div key={section.id}>
                     <h2>
-                      {" "}
                       {section.name
                         ? section.name
-                        : `Section ${section.type}`}{" "}
+                        : `Section ${section.section_no}`}{" "}
                     </h2>
                     <ol className="choiced-items" type="1">
                       {questions.map((question) => (
-                        <li className="item" key={question.question_no}>
+                        <li className="item" key={question.id} style={{ marginBottom: '20px' }}>
                           {question.question} <br />
                           {question.options &&
-                            question.options.map((option, index) => (
-                              <div key={index}>
-                                {String.fromCharCode(65 + index)}.{" "}
+                            question.options.map((option) => (
+                              <div key={option.id}>
+                                {String.fromCharCode(65 + option.option_no)}.
                                 {option.option}
                               </div>
                             ))}
@@ -175,13 +177,13 @@ const ViewAssessment = () => {
                   {" "}
                   EXPORT (to GIFT){" "}
                 </a>
-                <a
-                  href={`/view-assessment/${id}?action=edit`}
+                <Link
+                  to={`/view-assessment/${id}?action=edit`}
                   style={{ paddingLeft: "100px" }}
                 >
                   {" "}
                   EDIT{" "}
-                </a>
+                </Link>
               </h3>
             </div>
           ) : (
@@ -195,14 +197,14 @@ const ViewAssessment = () => {
                 <input
                   className="generic-form-textbox"
                   type="text"
-                  //name={`assessmentname_${assessment.pk}`}
+                  name={`assessmentname_${assessment.id}`}
                   defaultValue={assessment?.name}
                 />
                 <label> Description: </label>
                 <input
                   className="generic-form-textbox"
                   type="text"
-                  name={`assessmentdescription_${id}`}
+                  name={`assessmentdescription_${assessment.id}`}
                   defaultValue={assessment?.description}
                 />
                 <br />
@@ -217,27 +219,41 @@ const ViewAssessment = () => {
                         <input
                           className="generic-form-textbox"
                           type="text"
-                          name={`sectionname_${section.pk}`}
-                          defaultValue={section.name}
+                          name={`sectionname_${section.id}_${section.section_no}`}
+                          defaultValue={section.section_name}
                         />
                         <label> Description:</label>
                         <input
                           className="generic-form-textbox"
                           type="text"
-                          name={`sectiondescription_${section.pk}`}
+                          name={`sectiondescription_${section.id}_${section.section_no}`}
                           defaultValue={section.description}
                         />
-                        {section.type}
                         <ol className="choiced-items" type="1">
                           {questions.map((question) => (
-                            <li className="item" key={question.question_no}>
+                            <li className="item" key={question.id}>
                               <label>Question</label>
                               <input
                                 className="generic-form-textbox"
                                 type="text"
-                                name={`question_${question.pk}`}
+                                name={`question_${question.id}_${question.question_no}`}
                                 defaultValue={question.question}
                               />
+                              <ol type="A">
+                              {question.options &&
+                              question.options.map((option) => (
+                                <li className="option" key={option.id}>
+                                  <label>Option</label>
+                                  <input
+                                    className="generic-form-textbox"
+                                    type="text"
+                                    name={`option_${option.id}_${option.option_no}`}
+                                    defaultValue={option.option}
+                                  />
+                                </li>
+                              ))}
+                              </ol>
+                              <br />
                               {question.type === "Multiple Choice" ? (
                                 <>
                                   <label>Answer</label>
@@ -267,9 +283,12 @@ const ViewAssessment = () => {
                                   <input
                                     className="generic-form-textbox"
                                     type="text"
-                                    name={`answer_${question.pk}`}
-                                    defaultValue={question.answer || ""}
+                                    name={`answer_${question.id}`}
+                                    defaultValue={String.fromCharCode(
+                                      65 + parseInt(question.answer))  || ""}
+                                    style={{ marginBottom: '20px' }}
                                   />
+                                  <br />
                                 </>
                               )}
                             </li>
