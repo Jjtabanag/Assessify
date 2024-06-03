@@ -1,2 +1,4 @@
 /.venv
 /backend/key.txt
+/backend/AppDevFinalProject/__pycache__/
+/backend/api/__pycache__/
