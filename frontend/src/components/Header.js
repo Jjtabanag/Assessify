@@ -1,7 +1,7 @@
 import axios from "axios";
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../App.css";
-import { useContext } from "react";
 import UserContext from "../contexts/UserContext";
 
 export function Header() {
@@ -56,7 +56,6 @@ export function Header() {
         console.log("Logged out successfully");
       } else {
         console.error("Error logging out:", response);
-        console.error("Error logging out:", response);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -71,7 +70,7 @@ export function Header() {
       <div>
         <nav className="nav-container">
           <div className="navbar-div-left">
-            <a href="../index.html" className="web-logo">
+            <Link to="/home">
               <div className="nav-element">
                 <img
                   src="/assets/images/BRAND_LOGO.png"
@@ -79,23 +78,7 @@ export function Header() {
                   alt="logo"
                 />
               </div>
-            </a>
-            <a href="../index.html" className="nav-interactable">
-              <div className="nav-element"> Pricing </div>
-            </a>
-            <a href="../index.html" className="nav-interactable">
-              <div className="nav-element"> About Us </div>
-            </a>
-          <div className="navbar-div-left">
-            <a href="../index.html" className="web-logo">
-              <div className="nav-element">
-                <img
-                  src="/assets/images/BRAND_LOGO.png"
-                  height="40"
-                  alt="logo"
-                />
-              </div>
-            </a>
+            </Link>
             <a href="../index.html" className="nav-interactable">
               <div className="nav-element"> Pricing </div>
             </a>
@@ -138,9 +121,6 @@ export function Header() {
           </div>
 
           <div className="navbar-div-right">
-            <Link to="/login" className="nav-interactable">
-              <div className="nav-element"> Sign In </div>
-            </Link>
             <Link to="/login" className="nav-interactable">
               <div className="nav-element"> Sign In </div>
             </Link>

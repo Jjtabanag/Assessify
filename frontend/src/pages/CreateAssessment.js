@@ -1,12 +1,11 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import AssessmentSection from "../components/AssessmentSection";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import UserContext from "../contexts/UserContext";
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import AssessmentSection from "../components/AssessmentSection";
 import Header from "../components/Header";
+import UserContext from "../contexts/UserContext";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const CreateAssessmentPage = () => {
   const location = useLocation();
@@ -157,7 +156,7 @@ const CreateAssessmentPage = () => {
       );
     }
 
-    if (!token) {
+    if (!csrfToken) {
       console.log(
         "CSRF token not found. Please refresh the page and try again."
       );
@@ -283,13 +282,14 @@ const CreateAssessmentPage = () => {
               short and simple assessments.{" "}
             </p>{" "}
             <br />
-            <label> Assessment Name </label>
+            <label> Assessment Name </label> <br />
             <input
               className="generic-form-textbox"
               type="text"
               placeholder="What's the name of your assessment?"
               name="assessment_name"
             />
+            <br />
             <label> Assessment Description </label>
             <input
               className="generic-form-textbox"

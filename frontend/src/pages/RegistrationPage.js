@@ -1,10 +1,6 @@
 import axios from "axios";
-import { useState, useEffect, useContext, useNavigate } from "react";
-import Header from "../components/Header";
-import RegisterPopup from "../components/RegisterPopup";
-import UserContext from "../contexts/UserContext";
-import axios from "axios";
-import { useState, useEffect, useContext, useNavigate } from "react";
+import { useContext, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import Header from "../components/Header";
 import RegisterPopup from "../components/RegisterPopup";
 import UserContext from "../contexts/UserContext";
@@ -27,53 +23,55 @@ const RegistrationPage = () => {
     withCredentials: true,
   });
 
-  useEffect(() => {
-    if (user.isAuthenticated) {
-      navigate("/home");
-    }
-  }, [user, navigate]);
+  // This will always redirect back to login page when user has not logged in yet
 
-  useEffect(() => {
-    const csrfToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("csrftoken"))
-      ?.split("=")[1];
+  // useEffect(() => {
+  //   if (user.isAuthenticated) {
+  //     navigate("/home");
+  //   }
+  // }, [user, navigate]);
 
-    if (csrfToken) {
-      setToken(csrfToken);
-    } else {
-      setError("CSRF token not found. Please refresh the page and try again.");
-    }
+  // useEffect(() => {
+  //   const csrfToken = document.cookie
+  //     .split("; ")
+  //     .find((row) => row.startsWith("csrftoken"))
+  //     ?.split("=")[1];
 
-    if (user) {
-      navigate("/home");
-      return;
-    }
-  }, []);
+  //   if (csrfToken) {
+  //     setToken(csrfToken);
+  //   } else {
+  //     setError("CSRF token not found. Please refresh the page and try again.");
+  //   }
 
-  useEffect(() => {
-    if (user.isAuthenticated) {
-      navigate("/home");
-    }
-  }, [user, navigate]);
+  //   if (user) {
+  //     navigate("/home");
+  //     return;
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    const csrfToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("csrftoken"))
-      ?.split("=")[1];
+  // useEffect(() => {
+  //   if (user.isAuthenticated) {
+  //     navigate("/home");
+  //   }
+  // }, [user, navigate]);
 
-    if (csrfToken) {
-      setToken(csrfToken);
-    } else {
-      setError("CSRF token not found. Please refresh the page and try again.");
-    }
+  // useEffect(() => {
+  //   const csrfToken = document.cookie
+  //     .split("; ")
+  //     .find((row) => row.startsWith("csrftoken"))
+  //     ?.split("=")[1];
 
-    if (user) {
-      navigate("/home");
-      return;
-    }
-  }, []);
+  //   if (csrfToken) {
+  //     setToken(csrfToken);
+  //   } else {
+  //     setError("CSRF token not found. Please refresh the page and try again.");
+  //   }
+
+  //   if (user) {
+  //     navigate("/home");
+  //     return;
+  //   }
+  // }, []);
 
   const handleRegistration = async (event) => {
     event.preventDefault();
@@ -191,13 +189,11 @@ const RegistrationPage = () => {
               {error && <span style={{ color: "#FF0000" }}> {error} </span>}
               <hr />
               <p align="center">
-                {" "}
                 By signing up to our services, you agree to our Terms of Service
-                and Privacy Policy.{" "}
+                and Privacy Policy.
               </p>
               <button className="generic-button" type="submit">
-                {" "}
-                Sign Up Now!{" "}
+                Sign Up Now!
               </button>
             </form>
           </div>

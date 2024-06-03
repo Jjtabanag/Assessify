@@ -1,15 +1,15 @@
+import { useEffect, useState } from "react";
 import {
+  Navigate,
   Route,
   BrowserRouter as Router,
   Routes,
-  Navigate,
 } from "react-router-dom";
 import CreateAssessment from "./pages/CreateAssessment";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage";
-import HomePage from "./pages/HomePage";
 import ViewAssessment from "./pages/ViewAssessment";
-import { useEffect, useState } from "react";
 
 import UserContext from "./contexts/UserContext";
 
@@ -40,7 +40,7 @@ function App() {
             <Route path="/registration" element={<RegistrationPage />} />
             <Route path="/login" element={<LoginPage currentUser />} />
             <Route path="/create-assessment" element={<CreateAssessment />} />
-            <Route path="/view-assessment/:id" element={<ViewAssessment />} />
+            <Route path="/view-assessment/:id?" element={<ViewAssessment />} />
           </Routes>
         </UserContext.Provider>
       </div>
