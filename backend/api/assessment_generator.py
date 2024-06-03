@@ -3,13 +3,28 @@ import openai
 import os
 import json
 
-from llama_index.llms import OpenAI
-from llama_index import VectorStoreIndex, SimpleDirectoryReader, ServiceContext, StorageContext, load_index_from_storage
+from llama_index.llms.openai import OpenAI
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
 
 class AssessmentGenerator:
     
     def __init__(self):
         load_dotenv()
+
+        # Check if the environment variable is set and has a non-empty value
+        if 'OPENAI_API_KEY' in os.environ and os.environ['OPENAI_API_KEY']:
+            print("OPENAI_API_KEY is set and has a value:", os.environ['OPENAI_API_KEY'])
+        else:
+            # Attempt to load the API key from the file
+            key_file_path = "C:/Users/johni/Coding/Assessify/backend/key.txt" 
+            with open(key_file_path, "r") as key_file:
+                api_key = key_file.read().strip()
+                if api_key:
+                    print("OPENAI_API_KEY loaded from key.txt:", api_key)
+                    os.environ['OPENAI_API_KEY'] = api_key
+                else:
+                    print("OPENAI_API_KEY is either not set or has an empty value.")
+
         openai.api_key = os.getenv("OPENAI_API_KEY")
         llm = OpenAI(model="gpt-4-1106-preview")
         self.service_context = ServiceContext.from_defaults(llm=llm)
@@ -149,7 +164,7 @@ class AssessmentGenerator:
             if learning_outcomes == [] or learning_outcomes == None:
                 my_prompt = f"Generate {generate_questions} {question}.\n\n{response_format}"
             else:
-                formatted_learning_outcomes = "\n".join(learning_outcomes)
+                formatted_learning_outcomes = "\n".join(map(str, learning_outcomes))
                 my_prompt = f"Generate {generate_questions} {question} that is aligned with these learning outcomes: \n\n{formatted_learning_outcomes}.\n\n{response_format}"
             
             if exclude_questions == True:
