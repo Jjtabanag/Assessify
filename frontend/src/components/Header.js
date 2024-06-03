@@ -44,8 +44,6 @@ export function Header() {
         }
       );
 
-      console.log("Logout Response:", response);
-
       if (response.status === 200) {
         setUser({
           isAuthenticated: false,
@@ -92,6 +90,13 @@ export function Header() {
             >
               <div className="nav-element"> Sign Out </div>
             </Link>
+            <Link
+              to="/login"
+              className="nav-interactable"
+              onClick={handleSignout}
+            >
+              <div className="nav-element"> Sign Out </div>
+            </Link>
           </div>
         </nav>
       </div>
@@ -117,6 +122,7 @@ export function Header() {
               <div className="nav-element"> About Us </div>
             </a>
           </div>
+
           <div className="navbar-div-right">
             <Link to="/login" className="nav-interactable">
               <div className="nav-element"> Sign In </div>

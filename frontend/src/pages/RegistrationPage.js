@@ -19,6 +19,7 @@ const RegistrationPage = () => {
 
   const client = axios.create({
     baseURL: "http://localhost:8000",
+    baseURL: "http://localhost:8000",
     withCredentials: true,
   });
 
@@ -83,7 +84,11 @@ const RegistrationPage = () => {
       setError(error.response.data.message);
       console.log("Error registering");
       console.error("Error:", error);
+      setError(error.response.data.message);
+      console.log("Error registering");
+      console.error("Error:", error);
     }
+  };
   };
 
   return (
@@ -92,7 +97,16 @@ const RegistrationPage = () => {
       {openPopup && <RegisterPopup />}
       <main className="content-container">
         <div className="content-left"></div>
+        <div className="content-left"></div>
         <div className="content-right">
+          <div className="register-container">
+            <h1 align="center"> Sign Up </h1>
+            <p align="center">
+              {" "}
+              Creating an account is very simple!
+              <br />
+              Start working with us now!{" "}
+            </p>
           <div className="register-container">
             <h1 align="center"> Sign Up </h1>
             <p align="center">
@@ -167,10 +181,79 @@ const RegistrationPage = () => {
               </button>
             </form>
           </div>
+            <form
+              className="navbar-searchbar"
+              onSubmit={handleRegistration}
+              style={{ width: "100%" }}
+            >
+              <label> Email </label>
+              <br />
+              <input
+                className="form-textbox"
+                type="text"
+                placeholder="johndoe123@domain.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ width: "100%" }}
+              />{" "}
+              <br />
+              <br />
+              <label> Username </label>
+              <br />
+              <input
+                className="form-textbox"
+                type="text"
+                placeholder="John Doe"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{ width: "100%" }}
+              />{" "}
+              <br />
+              <br />
+              <label> Password </label>
+              <br />
+              <input
+                className="form-textbox"
+                type="password"
+                placeholder="Enter your password."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ width: "100%" }}
+              />{" "}
+              <br />
+              <br />
+              <label> Re-enter Password </label>
+              <input
+                className="form-textbox"
+                type="password"
+                placeholder="Re-enter password to confirm password."
+                value={repassword}
+                onChange={(e) => setRepassword(e.target.value)}
+                style={{ width: "100%" }}
+              />
+              <br />
+              <br />
+              {error && <span style={{ color: "#FF0000" }}> {error} </span>}
+              <hr />
+              <p align="center">
+                {" "}
+                By signing up to our services, you agree to our Terms of Service
+                and Privacy Policy.{" "}
+              </p>
+              <button className="generic-button" type="submit">
+                {" "}
+                Sign Up Now!{" "}
+              </button>
+            </form>
+          </div>
         </div>
       </main>
     </>
   );
 };
+  );
+};
+
+export default RegistrationPage;
 
 export default RegistrationPage;
