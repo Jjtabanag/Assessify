@@ -14,8 +14,6 @@ const LoginPage = () => {
 
   const { user, setUser } = useContext(UserContext);
 
-  const { user, setUser } = useContext(UserContext);
-
   const client = axios.create({
     baseURL: "http://localhost:8000",
     withCredentials: true,
@@ -63,71 +61,56 @@ const LoginPage = () => {
 
     if (emailorusername === "" || password === "") {
       setError("Please fill in all fields");
-    if (emailorusername === "" || password === "") {
-      setError("Please fill in all fields");
-      return;
-    }
-
-    if (!token) {
-      setError("CSRF token not found. Please try again.");
-      return;
-    }
-
-
-    if (!token) {
-      setError("CSRF token not found. Please try again.");
-      return;
-    }
-
-    try {
-      const response = await client.post(
-        "/login",
-        {
-          emailorusername: emailorusername,
-          password: password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": token,
-          },
-      const response = await client.post(
-        "/login",
-        {
-          emailorusername: emailorusername,
-          password: password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": token,
-          },
-        }
-      );
-
-      );
-
-      if (response.status === 202) {
-        console.log("Login successful");
-        setUser({ isAuthenticated: true, userData: response.data.user });
-        sessionStorage.setItem("user", JSON.stringify(response.data.user));
-        sessionStorage.setItem("token", response.data.token);
-        navigate("/home");
-        console.log("Login successful");
-        setUser({ isAuthenticated: true, userData: response.data.user });
-        sessionStorage.setItem("user", JSON.stringify(response.data.user));
-        sessionStorage.setItem("token", response.data.token);
-        navigate("/home");
+      if (emailorusername === "" || password === "") {
+        setError("Please fill in all fields");
+        return;
       }
-    } catch (error) {
-      setError(error.response.data.message);
-      console.log("Error logging in");
-      console.error("Error:", error);
-      console.log("Error logging in");
-      console.error("Error:", error);
-    }
-  };
 
+      if (!token) {
+        setError("CSRF token not found. Please try again.");
+        return;
+      }
+
+      if (!token) {
+        setError("CSRF token not found. Please try again.");
+        return;
+      }
+
+      try {
+        const response = await client.post(
+          "/login",
+          {
+            emailorusername: emailorusername,
+            password: password,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": token,
+            },
+          }
+        );
+
+        if (response.status === 202) {
+          console.log("Login successful");
+          setUser({ isAuthenticated: true, userData: response.data.user });
+          sessionStorage.setItem("user", JSON.stringify(response.data.user));
+          sessionStorage.setItem("token", response.data.token);
+          navigate("/home");
+          console.log("Login successful");
+          setUser({ isAuthenticated: true, userData: response.data.user });
+          sessionStorage.setItem("user", JSON.stringify(response.data.user));
+          sessionStorage.setItem("token", response.data.token);
+          navigate("/home");
+        }
+      } catch (error) {
+        setError(error.response.data.message);
+        console.log("Error logging in");
+        console.error("Error:", error);
+        console.log("Error logging in");
+        console.error("Error:", error);
+      }
+    }
   };
 
   return (
@@ -231,9 +214,5 @@ const LoginPage = () => {
     </>
   );
 };
-  );
-};
-
-export default LoginPage;
 
 export default LoginPage;
