@@ -270,14 +270,14 @@ const ViewAssessment = () => {
               <div className="assessment-container">
                 <label> Assessment Name: </label>
                 <input
-                  className="generic-form-textbox"
+                  className="generic-form-textbox-1"
                   type="text"
                   name={`assessmentname_${assessment.id}`}
                   defaultValue={assessment?.name}
                 />
                 <label> Description: </label>
                 <input
-                  className="generic-form-textbox"
+                  className="generic-form-textbox-1"
                   type="text"
                   name={`assessmentdescription_${assessment.id}`}
                   defaultValue={assessment?.description}
@@ -292,14 +292,14 @@ const ViewAssessment = () => {
                         <br />
                         <label> Section Name: </label>
                         <input
-                          className="generic-form-textbox"
+                          className="generic-form-textbox-1"
                           type="text"
                           name={`sectionname_${section.id}_${section.section_no}`}
                           defaultValue={section.section_name}
                         />
                         <label> Description:</label>
                         <input
-                          className="generic-form-textbox"
+                          className="generic-form-textbox-1"
                           type="text"
                           name={`sectiondescription_${section.id}_${section.section_no}`}
                           defaultValue={section.description}
@@ -309,7 +309,7 @@ const ViewAssessment = () => {
                             <li className="item" key={question.id}>
                               <label>Question</label>
                               <input
-                                className="generic-form-textbox"
+                                className="generic-form-textbox-1"
                                 type="text"
                                 name={`question_${question.id}_${question.question_no}`}
                                 defaultValue={question.question}
@@ -320,7 +320,7 @@ const ViewAssessment = () => {
                                 <li className="option" key={option.id}>
                                   <label>Option</label>
                                   <input
-                                    className="generic-form-textbox"
+                                    className="generic-form-textbox-1"
                                     type="text"
                                     name={`option_${option.id}_${option.option_no}`}
                                     defaultValue={option.option}
@@ -333,7 +333,7 @@ const ViewAssessment = () => {
                                 <>
                                   <label>Answer</label>
                                   <input
-                                    className="generic-form-textbox"
+                                    className="generic-form-textbox-1"
                                     type="text"
                                     name={`answerwc_${question.pk}`}
                                     defaultValue={question.answer}
@@ -343,7 +343,7 @@ const ViewAssessment = () => {
                                       question.options.map((option, index) => (
                                         <li key={index}>
                                           <input
-                                            className="generic-form-textbox"
+                                            className="generic-form-textbox-1"
                                             type="text"
                                             name={`option_${option.pk}`}
                                             defaultValue={option.option}
@@ -356,7 +356,7 @@ const ViewAssessment = () => {
                                 <>
                                   <label>Answer</label>
                                   <input
-                                    className="generic-form-textbox"
+                                    className="generic-form-textbox-1"
                                     type="text"
                                     name={`answer_${question.id}`}
                                     defaultValue={String.fromCharCode(
@@ -373,11 +373,29 @@ const ViewAssessment = () => {
                     ))}
                   </div>
                 </div>
-                <button className="generic-button" type="submit">
-                  {" "}
-                  Save{" "}
+                <button 
+                className="generic-button"
+                type="submit"
+                style={{
+                  height: '60px',
+                  width: '350px',
+                  display: 'block',
+                  margin: '20px auto auto auto' }}
+                >
+                  Save
                 </button>
               </div>
+              <button
+                className="generic-button-variant-2"
+                onClick={() => navigate(`/view-assessment/${assessment.id}?action=view`)}
+                style={{
+                  height: '60px',
+                  width: '350px',
+                  display: 'block',
+                  margin: '20px auto auto auto' }}
+                >
+                  Back
+              </button>
             </form>
           )}
         </div>
