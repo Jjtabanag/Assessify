@@ -67,7 +67,7 @@ class Converter:
 
         Parameters:
         - assessment (dict): The quiz assessment in dictionary format.
-        - type (str): The type of assessment ("Multiple Choice", "Identification", "True or False", "Fill in the Blanks", "Essay").
+        - type (str): The type of assessment ("multiple choice", "identification", "true or false", "fill in the blanks", "essay").
 
         Note:
         - This method creates a PDF document with formatted content based on the quiz assessment.
@@ -86,7 +86,7 @@ class Converter:
         file_path = os.path.join(directory, f"{name}_quiz.pdf")
 
         # Create a PDF document
-        pdf_canvas = canvas.Canvas(file_path, pagesize=letter)
+        pdf_canvas = canvas.Canvas(rf"api\media\{username}\exports\{name}_quiz.pdf", pagesize=letter)
 
         pdf_canvas.setFont("Helvetica-Bold", 14)
         pdf_canvas.drawString(50, 770, f"{type}")
@@ -108,7 +108,7 @@ class Converter:
 
             question_text = question.get("question", "")
 
-            if type == "Multiple Choice":
+            if type == "multiple choice":
                 options = question.get("options", [])
                 pdf_canvas.drawString(x_position, y_position, f"{index}. {question_text}")
 
@@ -124,7 +124,7 @@ class Converter:
                             pdf_canvas.drawString(x_position + 28, y_position - 2, wrapped_option_line)
                         y_position -= line_height
 
-            elif type == "Identification":
+            elif type == "identification":
                 wrapped_text_lines = Converter.wrap_text(f"{index}. {question_text}", max_line_length)
                 for i, wrapped_text_line in enumerate(wrapped_text_lines):
                     if i == 0:
@@ -133,7 +133,7 @@ class Converter:
                         pdf_canvas.drawString(x_position + 15, y_position, wrapped_text_line)
                     y_position -= line_height
 
-            elif type == "True or False":
+            elif type == "true or false":
                 wrapped_text_lines = Converter.wrap_text(f"{index}. {question_text}", max_line_length)
                 for i, wrapped_text_line in enumerate(wrapped_text_lines):
                     if i == 0:
@@ -142,7 +142,7 @@ class Converter:
                         pdf_canvas.drawString(x_position + 15, y_position, wrapped_text_line)
                     y_position -= line_height
 
-            elif type == "Fill in the Blanks":
+            elif type == "fill in the blanks":
                 lines = Converter.wrap_text(f"{index}. {question_text}", max_line_length)
                 for i, line in enumerate(lines):
                     if i == 0:
@@ -151,7 +151,7 @@ class Converter:
                         pdf_canvas.drawString(x_position + 15, y_position-5, line)
                     y_position -= line_height
 
-            elif type == "Essay":
+            elif type == "essay":
                 lines = Converter.wrap_text(f"{index}. {question_text}", max_line_length)
                 for i, line in enumerate(lines):
                     if i == 0:
@@ -181,7 +181,7 @@ class Converter:
 
         Parameters:
         - assessment (dict): The quiz assessment in dictionary format.
-        - type (str): The type of assessment ("Multiple Choice", "Identification", "True or False", "Fill in the Blanks", "Essay").
+        - type (str): The type of assessment ("multiple choice", "identification", "true or false", "fill in the blanks", "essay").
 
         Note:
         - This method creates an answer key PDF document with correct answers for the quiz assessment.
@@ -194,7 +194,7 @@ class Converter:
         questions = assessment.get("questions", [])
 
         # Create a PDF document for the answer key
-        pdf_canvas = canvas.Canvas(rf"api\media\{username}\exports\{name}_quiz_answer-key.pdf", pagesize=letter)
+        pdf_canvas = canvas.Canvas(rf"backend\api\media\{username}\exports\{name}_quiz_answer-key.pdf", pagesize=letter)
 
         # Add content to the PDF
         pdf_canvas.setFont("Helvetica", 12)
@@ -244,7 +244,7 @@ class Converter:
         """
 
         # Create a PDF document
-        pdf_canvas = canvas.Canvas(rf"api\media\{username}\exports\{name}_exam.pdf", pagesize=letter)
+        pdf_canvas = canvas.Canvas(rf"backend\api\media\{username}\exports\{name}_exam.pdf", pagesize=letter)
 
         # Add a header to the PDF
         pdf_canvas.setFont("Helvetica-Bold", 14)
@@ -283,8 +283,8 @@ class Converter:
                         pdf_canvas.drawString(x_position + 15, y_position, wrapped_question_line)
                     y_position -= line_height
 
-                # Add options to the PDF if it's a Multiple Choice section
-                if section["section_type"] == "Multiple Choice":
+                # Add options to the PDF if it's a multiple choice section
+                if section["section_type"] == "multiple choice":
                     options = question.get("options", [])
                     for option_index, option in enumerate(options, start=1):
                         y_position -= line_height  # Adjust the vertical position for each option
@@ -332,7 +332,7 @@ class Converter:
         # exam['name'] and exam['description'] 
 
         # Create a PDF document for the answer key
-        pdf_canvas = canvas.Canvas(rf"api\media\{username}\exports\{name}_exam_answer-key.pdf", pagesize=letter)
+        pdf_canvas = canvas.Canvas(rf"backend\api\media\{username}\exports\{name}_exam_answer-key.pdf", pagesize=letter)
 
         # Add content to the PDF
         pdf_canvas.setFont("Helvetica", 12)
@@ -345,7 +345,7 @@ class Converter:
         for section in exam["sections"]:
             # Add section name to the PDF
             pdf_canvas.setFont("Helvetica-Bold", 14)
-            if section["section_type"] != "Essay":
+            if section["section_type"] != "essay":
                 pdf_canvas.drawString(50, y_position, section["section_type"])
             pdf_canvas.setFont("Helvetica", 12)
             y_position -= line_height  # Adjust the vertical position for the section name
@@ -359,18 +359,18 @@ class Converter:
                     pdf_canvas.showPage()
                     y_position = 780  # Reset y_position for the new page
 
-                if section["section_type"] == "Multiple Choice":
+                if section["section_type"] == "multiple choice":
                     correct_answer = f"Question {index}: {question['answer']}"
-                elif section["section_type"] == "Identification":
+                elif section["section_type"] == "identification":
                     correct_answer = f"Question {index}: {question['answer']}"
-                elif section["section_type"] == "True or False":
+                elif section["section_type"] == "true or false":
                     correct_answer = f"Question {index}: {'True' if question['answer'] else 'False'}"
-                elif section["section_type"] == "Fill in the Blanks":
+                elif section["section_type"] == "fill in the blanks":
                     correct_answer = f"Question {index}: {question['answer']}"
-                elif section["section_type"] == "Essay":
+                elif section["section_type"] == "essay":
                     pass
                 
-                if(section["section_type"] != "Essay"):
+                if(section["section_type"] != "essay"):
                     wrapped_correct_answer = Converter.wrap_text(correct_answer, max_line_length)
                     for i, wrapped_question_line in enumerate(wrapped_correct_answer):
                         if i == 0:
@@ -396,7 +396,7 @@ class Converter:
         - output_file (str): The path to the output GIFT file.
 
         Note:
-        - This method supports various types of quiz questions (Multiple Choice, Identification, True or False, Fill in the Blanks, Essay).
+        - This method supports various types of quiz questions (multiple choice, identification, true or false, fill in the blanks, essay).
         - The GIFT file is created based on the input JSON data and saved to the specified output file.
         """
 
@@ -406,7 +406,7 @@ class Converter:
             question_type = json_data["type"]
             question_text = question_data["question"]
 
-            if question_type == "Multiple Choice":
+            if question_type == "multiple choice":
                 options = question_data.get("options", [])
                 correct_answer_index = question_data.get("answer", 0)
 
@@ -417,12 +417,12 @@ class Converter:
                     else:
                         gift_string += f"~ {option}\n"
 
-            elif question_type == "Identification":
+            elif question_type == "identification":
                 correct_answer = question_data.get("answer", "")
 
                 gift_string += f"::Question::{question_text}?\n= {correct_answer}\n"
 
-            elif question_type == "True or False":
+            elif question_type == "true or false":
                 correct_answer = question_data.get("answer", False)
 
                 gift_string += f"::Question::{question_text}?\n"
@@ -431,16 +431,16 @@ class Converter:
                 else:
                     gift_string += "= False\n~ True\n"
 
-            elif question_type == "Fill in the Blanks":
+            elif question_type == "fill in the blanks":
                 correct_answer = question_data.get("answer", "")
 
                 gift_string += f"::Question::{question_text} is ___?\n= {correct_answer}\n"
 
-            elif question_type == "Essay":
+            elif question_type == "essay":
                 gift_string += f"::Question::{question_text}?\n"
 
         # Save the GIFT content to the specified output file
-        with open(rf"api\media\{username}\exports\{name}_quiz-gift.txt", "w") as file:
+        with open(rf"backend\api\media\{username}\exports\{name}_quiz-gift.txt", "w") as file:
             file.write(gift_string)
 
     @staticmethod
@@ -452,7 +452,7 @@ class Converter:
         - exam (dict): The exam assessment in dictionary format.
 
         Note:
-        - This method supports various types of exam sections (Multiple Choice, Identification, True or False, Fill in the Blanks, Essay).  
+        - This method supports various types of exam sections (multiple choice, identification, true or false, fill in the blanks, essay).  
         - The GIFT file is created based on the input JSON data and saved to the specified output file.
         """
         
@@ -468,7 +468,7 @@ class Converter:
             for question_data in questions:
                 question_text = question_data["question"]
 
-                if section_type == "Multiple Choice":
+                if section_type == "multiple choice":
                     options = question_data.get("options", [])
                     correct_answer_index = question_data.get("answer", 0)
 
@@ -479,12 +479,12 @@ class Converter:
                         else:
                             gift_string += f"~ {option}\n"
 
-                elif section_type == "Identification":
+                elif section_type == "identification":
                     correct_answer = question_data.get("answer", "")
 
                     gift_string += f"::Question::{question_text}?\n= {correct_answer}\n"
 
-                elif section_type == "True or False":
+                elif section_type == "true or false":
                     correct_answer = question_data.get("answer", False)
 
                     gift_string += f"::Question::{question_text}?\n"
@@ -493,16 +493,16 @@ class Converter:
                     else:
                         gift_string += "= False\n~ True\n"
 
-                elif section_type == "Fill in the Blanks":
+                elif section_type == "fill in the blanks":
                     correct_answer = question_data.get("answer", "")
 
                     gift_string += f"::Question::{question_text} is ___?\n= {correct_answer}\n"
 
-                elif section_type == "Essay":
+                elif section_type == "essay":
                     gift_string += f"::Question::{question_text}?\n"
 
         # Save the GIFT content to the specified output file
-        with open(rf"api\media\{username}\exports\{name}_exam-gift.txt", "w") as file:
+        with open(rf"backend\api\media\{username}\exports\{name}_exam-gift.txt", "w") as file:
             file.write(gift_string)
 
         return gift_string
@@ -574,7 +574,7 @@ class Converter:
                     document.add_paragraph(answer_text, style="Body Text")
 
         # Save the document
-        file_path = fr'api\media\{username}\exports\{name}_quiz.docx'
+        file_path = fr'backend\api\media\{username}\exports\{name}_quiz.docx'
         document.save(file_path)
 
     @staticmethod
@@ -595,7 +595,7 @@ class Converter:
                 document.add_paragraph(question_text, style="Heading 2")
 
                 if section_type.lower() == "multiple choice":
-                    print("Multiple Choice Questions \n\n")
+                    print("multiple choice Questions \n\n")
                     for j, option in enumerate(question_data["options"], start=1):
                         option_text = f"  {chr(64 + j)}. {option}"
                         document.add_paragraph(option_text)
@@ -627,5 +627,5 @@ class Converter:
 
         print('Here')
         # Save the document
-        file_path = fr'api\media\{username}\exports\{name}_exam.docx'
+        file_path = fr'backend\api\media\{username}\exports\{name}_exam.docx'
         document.save(file_path)

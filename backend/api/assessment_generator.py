@@ -234,8 +234,8 @@ class AssessmentGenerator:
                 exclude = True
             else:
                 exclude = False
-
-            questions = self.get_quiz(username, assessment_type, question_count, learning_outcomes, lesson_path=lesson, exclude_questions=exclude, index=index)
+                
+            questions = self.get_quiz(assessment_type, question_count, learning_outcomes, lesson_path=lesson, exclude_questions=exclude, index=index)
             
             exam["sections"].append({
                 "name": f"Section {counter}",

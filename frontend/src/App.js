@@ -38,7 +38,7 @@ function App() {
             <Route exact path="/" element={<Navigate to="/login" />} />
             <Route path="/home" exact element={<HomePage />} />
             <Route path="/registration" element={<RegistrationPage />} />
-            <Route path="/login" element={<LoginPage currentUser />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/create-assessment" element={<CreateAssessment />} />
             <Route path="/view-assessment/:id?" element={<ViewAssessment />} />
           </Routes>

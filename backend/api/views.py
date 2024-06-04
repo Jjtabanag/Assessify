@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.http import FileResponse, JsonResponse, HttpResponseBadRequest, HttpResponse
 import json
 import re
 import os
@@ -363,9 +363,8 @@ class ViewAssessmentView(APIView):
 # exports assessment
 class AssessmentExportView(View):
     
-    def get(self, request, id):
-        print('Exporting assessment')
-        user_id = id
+    def get(self, request):
+        user_id = request.GET.get('id')
         username = User.objects.get(user_id=user_id).username
         assessment_id = request.GET.get('as')
         file_format = request.GET.get('ff')
@@ -385,12 +384,13 @@ class AssessmentExportView(View):
                     'answer': q.answer
                 }
                 
-                if type == 'Multiple Choice':
+                if type == 'multiple choice':
                     # gets the list of data from the column 'option'
                     options = list(Option.objects.filter(question=q).values_list('option', flat=True))
                     question_data['options'] = options
                     option_answer = Option.objects.get(question=q, option_no=q.answer)
-                    question_data['answer'] = f'{chr(96 + option_answer.option_no)}. {option_answer}'
+                    formatted_answer = f'{chr(97 + option_answer.option_no).lower()}. {option_answer}'
+                    question_data['answer'] = formatted_answer
                     
                 question_data_list.append(question_data)
                 
@@ -438,13 +438,15 @@ class AssessmentExportView(View):
                         'answer': q.answer
                     }
                     
-                    if type == 'Multiple Choice':
+                    if type == 'multiple choice':
                         # gets the list of data from the column 'option'
                         options = list(Option.objects.filter(question=q).values_list('option', flat=True))
                         question_data['options'] = options
                         print(q.answer)
                         option_answer = Option.objects.get(question=q, option_no=q.answer)
-                        question_data['answer'] = f'{chr(97 + option_answer.option_no)}. {option_answer}'
+                        formatted_answer = f'{chr(97 + option_answer.option_no)}. {option_answer}'
+                        print("formatted answer: ", formatted_answer)
+                        question_data['answer'] = formatted_answer
                         
                     question_data_list.append(question_data)
                 
