@@ -48,7 +48,7 @@ const ViewAssessment = () => {
         console.error("Error fetching assessment data:", error);
       }
     };
-    console.log("Assessment Data: " + assessmentData)
+    console.log("Assessment Data: ", assessmentData)
     fetchAssessmentData();
   }, [id, action]);
 
@@ -186,7 +186,7 @@ const ViewAssessment = () => {
                     <h2>
                       {section.name
                         ? section.name
-                        : `Section ${section.section_no}`}{" "}
+                        : `Section ${section.section_no}`}
                     </h2>
                     <ol className="choiced-items" type="1">
                       {questions.map((question) => (
@@ -203,11 +203,14 @@ const ViewAssessment = () => {
                             <>
                               <br />
                               <b className="answer">
-                                {" "}
-                                Answer:{" "}
-                                {String.fromCharCode(
+                                Answer:
+                                {section.type === 1
+                                ? String.fromCharCode(
                                   65 + parseInt(question.answer)
-                                )}{" "}
+                                )
+                                : question.answer
+                                }
+                                
                               </b>
                             </>
                           )}
@@ -335,7 +338,7 @@ const ViewAssessment = () => {
                                   <input
                                     className="generic-form-textbox-1"
                                     type="text"
-                                    name={`answerwc_${question.pk}`}
+                                    name={`answerwc_${question.pk}_$`}
                                     defaultValue={question.answer}
                                   />
                                   <ol className="options" type="A">
