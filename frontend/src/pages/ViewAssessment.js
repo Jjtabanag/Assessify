@@ -48,7 +48,7 @@ const ViewAssessment = () => {
         console.error("Error fetching assessment data:", error);
       }
     };
-    console.log("Assessment Data: ", assessmentData);
+    console.log("Assessment Data: " + assessmentData);
     fetchAssessmentData();
   }, [id, action]);
 
@@ -101,9 +101,57 @@ const ViewAssessment = () => {
       navigate(`/view-assessment/${id}?action=view`);
     } catch (error) {
       console.error("Error saving assessment:", error);
-      // Handle error, e.g., show an error message
     }
   };
+
+  function handleExport(format) {
+    return function (event) {
+      const assessmentId = id; // Ensure 'id' is defined
+      const userId = user.userData; // Ensure 'user.userData' is defined
+
+      console.log(userId);
+
+      const exportUrl = `http://localhost:8000/export_assessment/${userId.id}?as=${assessmentId}&ff=${format}`;
+
+      fetch(exportUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"), // Assuming you have a function to get the CSRF token
+        },
+      })
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.download = `${assessmentId}_assessment.${
+            format === "gift" ? "txt" : format
+          }`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch((error) => console.error("Error:", error));
+    };
+  }
+
+  // Example of getting CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
 
   return (
     <>
@@ -124,7 +172,7 @@ const ViewAssessment = () => {
                     <h2>
                       {section.name
                         ? section.name
-                        : `Section ${section.section_no}`}
+                        : `Section ${section.section_no}`}{" "}
                     </h2>
                     <ol className="choiced-items" type="1">
                       {questions.map((question) => (
@@ -150,9 +198,11 @@ const ViewAssessment = () => {
                               <b className="answer">
                                 {" "}
                                 Answer:{" "}
-                                {String.fromCharCode(
-                                  65 + parseInt(question.answer)
-                                )}{" "}
+                                {question.answer.length === 1
+                                  ? String.fromCharCode(
+                                      65 + parseInt(question.answer)
+                                    )
+                                  : question.answer}
                               </b>
                             </>
                           )}
@@ -165,31 +215,36 @@ const ViewAssessment = () => {
               <br />
               <br />
               <h3>
-                <a href={`/export-assessment?as=${id}&ff=pdf`}>
-                  {" "}
-                  EXPORT (to PDF){" "}
-                </a>
-                <a
-                  href={`/export-assessment?as=${id}&ff=word`}
-                  style={{ paddingLeft: "100px" }}
+                <button
+                  data-format="pdf"
+                  className="generic-button-export"
+                  onClick={handleExport("pdf")}
                 >
-                  {" "}
-                  EXPORT (to WORD){" "}
-                </a>
-                <a
-                  href={`/export-assessment?as=${id}&ff=gift`}
-                  style={{ paddingLeft: "100px" }}
+                  EXPORT (to PDF)
+                </button>
+                <button
+                  data-format="word"
+                  style={{ marginLeft: "20px" }}
+                  className="generic-button-export"
+                  onClick={handleExport("word")}
                 >
-                  {" "}
-                  EXPORT (to GIFT){" "}
-                </a>
+                  EXPORT (to WORD)
+                </button>
+                <button
+                  data-format="gift"
+                  style={{ marginLeft: "20px" }}
+                  className="generic-button-export"
+                  onClick={handleExport("gift")}
+                >
+                  EXPORT (to GIFT)
+                </button>
                 <Link
                   to={`/view-assessment/${id}?action=edit`}
                   style={{ marginLeft: "100px" }}
                   className="generic-button-export"
                 >
                   {" "}
-                  EDIT{" "}
+                  Edit Assessment{" "}
                 </Link>
               </h3>
             </div>
@@ -202,14 +257,14 @@ const ViewAssessment = () => {
               <div className="assessment-container">
                 <label> Assessment Name: </label>
                 <input
-                  className="generic-form-textbox-1"
+                  className="generic-form-textbox"
                   type="text"
                   name={`assessmentname_${assessment.id}`}
                   defaultValue={assessment?.name}
                 />
                 <label> Description: </label>
                 <input
-                  className="generic-form-textbox-1"
+                  className="generic-form-textbox"
                   type="text"
                   name={`assessmentdescription_${assessment.id}`}
                   defaultValue={assessment?.description}
@@ -224,14 +279,14 @@ const ViewAssessment = () => {
                         <br />
                         <label> Section Name: </label>
                         <input
-                          className="generic-form-textbox-1"
+                          className="generic-form-textbox"
                           type="text"
                           name={`sectionname_${section.id}_${section.section_no}`}
                           defaultValue={section.section_name}
                         />
                         <label> Description:</label>
                         <input
-                          className="generic-form-textbox-1"
+                          className="generic-form-textbox"
                           type="text"
                           name={`sectiondescription_${section.id}_${section.section_no}`}
                           defaultValue={section.description}
@@ -241,7 +296,7 @@ const ViewAssessment = () => {
                             <li className="item" key={question.id}>
                               <label>Question</label>
                               <input
-                                className="generic-form-textbox-1"
+                                className="generic-form-textbox"
                                 type="text"
                                 name={`question_${question.id}_${question.question_no}`}
                                 defaultValue={question.question}
@@ -265,17 +320,19 @@ const ViewAssessment = () => {
                                 <>
                                   <label>Answer</label>
                                   <input
-                                    className="generic-form-textbox-1"
+                                    className="generic-form-textbox"
                                     type="text"
                                     name={`answerwc_${question.pk}`}
-                                    defaultValue={question.answer}
+                                    defaultValue={String.fromCharCode(
+                                      65 + parseInt(question.answer)
+                                    )}
                                   />
                                   <ol className="options" type="A">
                                     {question.options &&
                                       question.options.map((option, index) => (
                                         <li key={index}>
                                           <input
-                                            className="generic-form-textbox-1"
+                                            className="generic-form-textbox"
                                             type="text"
                                             name={`option_${option.pk}`}
                                             defaultValue={option.option}
@@ -288,7 +345,7 @@ const ViewAssessment = () => {
                                 <>
                                   <label>Answer</label>
                                   <input
-                                    className="generic-form-textbox-1"
+                                    className="generic-form-textbox"
                                     type="text"
                                     name={`answer_${question.id}`}
                                     defaultValue={question.answer}
@@ -304,25 +361,21 @@ const ViewAssessment = () => {
                     ))}
                   </div>
                 </div>
-                <button className="generic-button" type="submit">
-                  {" "}
-                  Save{" "}
-                </button>
+                <br></br>
+                <div className="button-container">
+                  <Link
+                    className="generic-button-export"
+                    to={`/view-assessment/${id}?action=view`}
+                  >
+                    {" "}
+                    Cancel{" "}
+                  </Link>
+                  <button className="generic-button-export" type="submit">
+                    {" "}
+                    Save{" "}
+                  </button>
+                </div>
               </div>
-              <button
-                className="generic-button-variant-2"
-                onClick={() =>
-                  navigate(`/view-assessment/${assessment.id}?action=view`)
-                }
-                style={{
-                  height: "60px",
-                  width: "350px",
-                  display: "block",
-                  margin: "20px auto auto auto",
-                }}
-              >
-                Back
-              </button>
             </form>
           )}
         </div>
