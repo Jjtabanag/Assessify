@@ -40,7 +40,7 @@ class AssessmentGenerator:
         with open(file_path, 'w') as f:
             f.write(questions)
 
-    def get_quiz(self, assessment_type, number_of_questions, learning_outcomes, lesson_path="", exclude_questions=False, index=None) -> dict:
+    def get_quiz(self, username, assessment_type, number_of_questions, learning_outcomes, lesson_path="", exclude_questions=False, index=None) -> dict:
         
         print("Generating Quiz...")
         print(f"Assessment Type: {assessment_type}")
@@ -179,10 +179,8 @@ class AssessmentGenerator:
             assessment_str = str(assessment)
             
             
-            
             print(assessment_str)
 
-            
             excluded_questions = ""
 
             if number_of_questions != 1:

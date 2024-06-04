@@ -45,6 +45,7 @@ function AssessmentSection({ sectionCounter }) {
   return (
     <div>
       <h2 className="exam-part"> Section {sectionCounter} </h2>
+      <br></br>
       <label> Assessment Type </label>
       <div className="dropdown-container">
         <input

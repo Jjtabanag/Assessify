@@ -16,6 +16,7 @@ const ViewAssessmentsPage = () => {
     baseURL: "http://localhost:8000",
     withCredentials: true,
   });
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -104,7 +105,7 @@ const ViewAssessmentsPage = () => {
             className="assessment-create-box"
           >
             <img
-              src="/assets/images/add.png"
+              src="/assets/images/dwafawf.png"
               height="150"
               width="165"
               alt="add button"

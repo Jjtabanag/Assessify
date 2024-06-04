@@ -12,7 +12,8 @@ urlpatterns = [
     path('assessments', views.AssessmentsView.as_view(), name='assessments'),
     path('create_assessment',views.CreateAssessmentView.as_view(), name='create_assessment'),
     path('view_assessment/<int:id>', views.ViewAssessmentView.as_view(), name='view_assessment'),
-    path('assessment_export', views.AssessmentExportView.as_view(), name='export_assessment'),
+    path('export_assessment/<int:id>',views.AssessmentExportView.as_view(), name='export-assessment'),
+    
     
     # path('assessment', views.AssessmentView.as_view(), name='assessment'),
     # path('assessment_type', views.AssessmentTypeView.as_view(), name='assessment_type'),

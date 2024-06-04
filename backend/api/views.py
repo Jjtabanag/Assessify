@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 import json
 import re
 import os
@@ -32,6 +32,12 @@ from .serializers import AssessmentSerializer, SectionSerializer, QuestionSerial
 from .converter import Converter
 from .models import Assessment, Question_Type, User, Question, Option, Section
 from .file_handler import download_file, handle_uploaded_file
+from django.core.files.storage import FileSystemStorage
+from zipfile import ZipFile
+import os
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 # Notes:
@@ -59,34 +65,33 @@ class UserRegisterView(APIView):
         return JsonResponse({'message': 'User registration page'})
 
     def post(self, request):
-        
         data = json.loads(request.body)
         email = data.get('email')
         username = data.get('username')
         password = data.get('password')
         re_password = data.get('repassword')
-        error = ''
-        
-        if password == re_password:
-            try:
-                serializer = UserSerializer(data={'email': email, 'username': username, 'password': password})
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                os.makedirs(fr'backend\api\media\{username}\lessons', exist_ok=True)
-                os.makedirs(fr'backend\api\media\{username}\exports', exist_ok=True)
 
-                # If the user is created successfully, you can redirect
-                return JsonResponse({'status': 'success', 'message': 'User created successfully'}, status=201)
-            
-            except Exception as e:
-                if 'email' in str(e):
-                    error = 'Email already exists'
-                else:
-                    error = 'Username already exists'
-        else:
-            error = 'Incorrect password'
-            
-        return JsonResponse({'status': 'error', 'message': error}, status=403)
+        if password != re_password:
+            return HttpResponseBadRequest('Passwords do not match')
+
+        if User.objects.filter(email=email).exists():
+            return HttpResponseBadRequest('Email already exists')
+
+        if User.objects.filter(username=username).exists():
+            return HttpResponseBadRequest('Username already exists')
+
+        serializer = UserSerializer(data={'email': email, 'username': username, 'password': password})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            return HttpResponseBadRequest(e.message)
+
+        serializer.save()
+        os.makedirs(fr'backend\api\media\{username}\lessons', exist_ok=True)
+        os.makedirs(fr'backend\api\media\{username}\exports', exist_ok=True)
+
+        return JsonResponse({'status': 'success', 'message': 'User created successfully'}, status=201)
 
 @method_decorator(csrf_protect, name='dispatch')
 class UserLoginView(APIView):
@@ -113,7 +118,13 @@ class UserLoginView(APIView):
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
             print('Token:', token)
-            return Response({'status': 'success', 'message': 'User logged in', 'token': token.key}, status=202)
+            user_data = {
+                'id': user.pk,
+                'username': user.username,
+                'email': user.email,
+                # Add any other fields you need
+            }
+            return Response({'status': 'success', 'message': 'User logged in', 'token': token.key, 'user': user_data}, status=202)
         else:
             return Response({'status': 'error', 'message': 'Incorrect username/email or password'}, status=403)
 
@@ -254,6 +265,9 @@ class ViewAssessmentView(APIView):
                 section_data['questions'].append(question_data)
             assessment_data.append(section_data)
 
+            print(section_data['section']['type'])
+            print(section_data['section']['name'])
+
         return Response({'action': action, 'assessment': AssessmentSerializer(assessment).data,
                             'assessment_data': assessment_data})
     
@@ -347,10 +361,10 @@ class ViewAssessmentView(APIView):
                             'assessment_data': assessment_data}, status=status.HTTP_200_OK)
         
 # exports assessment
-@method_decorator(login_required, name='dispatch')
 class AssessmentExportView(View):
     
     def get(self, request, id):
+        print('Exporting assessment')
         user_id = id
         username = User.objects.get(user_id=user_id).username
         assessment_id = request.GET.get('as')
@@ -468,13 +482,14 @@ class AssessmentExportView(View):
         
         if file_format == 'pdf':
             # Create the zip file
-            file_path = rf'{username}\exports\{assessment.name}_assessment.zip'
+            file_path = os.path.join(username, 'exports', f'{assessment.name}_assessment.zip')
+            zip_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
             
-            with ZipFile(rf'{settings.MEDIA_ROOT}\{file_path}', 'w') as zip_object:
+            with ZipFile(zip_file_path, 'w') as zip_object:
                 # Adding files to the zip file
                 assessment_file_name = ''
                 answer_key_file_name = ''
-                    
+                
                 if assessment.type == 'quiz':
                     assessment_file_name = 'quiz'
                     answer_key_file_name = 'quiz_answer-key'
@@ -483,15 +498,20 @@ class AssessmentExportView(View):
                     assessment_file_name = 'exam'
                     answer_key_file_name = 'exam_answer-key'
                 
-                assessment_file_path = rf'{settings.MEDIA_ROOT}\{username}\exports\{assessment.name}_{assessment_file_name}.{file_format}'
-                answer_key_file_path = rf'{settings.MEDIA_ROOT}\{username}\exports\{assessment.name}_{answer_key_file_name}.{file_format}'
+                assessment_file_path = os.path.join(settings.MEDIA_ROOT, username, 'exports', f'{assessment.name}_{assessment_file_name}.{file_format}')
+                answer_key_file_path = os.path.join(settings.MEDIA_ROOT, username, 'exports', f'{assessment.name}_{answer_key_file_name}.{file_format}')
                         
                 zip_object.write(assessment_file_path, os.path.basename(assessment_file_path))
                 zip_object.write(answer_key_file_path, os.path.basename(answer_key_file_path))
         
         elif file_format == 'word':
-            file_path = rf"{username}\exports\{assessment.name}_{assessment.type}.docx"
+            file_path = os.path.join(username, 'exports', f'{assessment.name}_{assessment.type}.docx')
         else:
-            file_path = rf"{username}\exports\{assessment.name}_{assessment.type}-gift.txt"
+            file_path = os.path.join(username, 'exports', f'{assessment.name}_{assessment.type}-gift.txt')
                         
-        return download_file(request, file_path)
+         # Return the file directly as a response
+        file_full_path = os.path.join(settings.MEDIA_ROOT, file_path)
+        with open(file_full_path, 'rb') as file:
+            response = HttpResponse(file.read(), content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachment; filename={os.path.basename(file_full_path)}'
+            return response

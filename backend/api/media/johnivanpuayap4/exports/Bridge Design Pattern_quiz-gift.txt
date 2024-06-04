@@ -1,0 +1,20 @@
+::Question::What is the main intent of the Bridge Design Pattern??
+~ To enhance the functionality of an object at runtime
+~ To separate an abstraction from its implementation so that the two can vary independently
+~ To ensure that a class has only one instance and provide a global point of access to it
+~ To define an interface for creating an object, but let subclasses decide which class to instantiate
+::Question::Which of the following best describes what the 'abstraction' in the Bridge Pattern does??
+~ It is the lower-level implementation that does the actual work
+~ It defines the object's interface
+~ It is a design principle that dictates that software entities should be open for extension, but closed for modification
+~ It is a pattern that ensures a class has only two instances
+::Question::In the Bridge Pattern, what is the 'implementor' responsible for??
+~ Defining the interface for the abstraction
+~ Implementing the bridge between different parts of the system
+~ Providing the implementation for the abstraction's interface
+~ Creating multiple instances of an object
+::Question::Which of the following is a benefit of using the Bridge Design Pattern??
+~ It simplifies the code by merging abstraction and implementation
+~ It increases the coupling between the abstraction and implementation
+~ It allows for the implementation to be developed independently from the abstraction
+~ It ensures that a class can only have one instance

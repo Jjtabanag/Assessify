@@ -61,7 +61,7 @@ class Assessment(models.Model):
         print("s_type: ", s_type)
         
         # API CALL
-        quiz = self.generator.get_quiz(s_type, s_length, l_outcomes, self.lesson_path)
+        quiz = self.generator.get_quiz(self.user.username, s_type, s_length, l_outcomes, self.lesson_path)
         
         print(s_type)
 

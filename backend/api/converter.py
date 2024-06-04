@@ -6,6 +6,7 @@ from reportlab.lib import colors
 from pdf2image import convert_from_path
 from docx import Document
 from docx.enum.text import WD_BREAK
+import os
 
 class Converter:
 
@@ -75,8 +76,17 @@ class Converter:
         - The assessment dictionary should have the structure consistent with the expected format for the given type.
         """
 
+        # Create the directory if it doesn't exist
+        directory = os.path.join('api', 'media', username, 'exports')
+        if not os.path.exists(directory):
+            print('Creating directory...')
+            os.makedirs(directory)
+
+        # Create the file path
+        file_path = os.path.join(directory, f"{name}_quiz.pdf")
+
         # Create a PDF document
-        pdf_canvas = canvas.Canvas(rf"api\media\{username}\exports\{name}_quiz.pdf", pagesize=letter)
+        pdf_canvas = canvas.Canvas(file_path, pagesize=letter)
 
         pdf_canvas.setFont("Helvetica-Bold", 14)
         pdf_canvas.drawString(50, 770, f"{type}")
@@ -153,7 +163,12 @@ class Converter:
             y_position -= line_height  # Adjust the vertical position for the next question
 
         # Save the PDF
-        pdf_canvas.save()
+        try:
+            # Save the PDF
+            pdf_canvas.save()
+            print("PDF saved successfully.")
+        except Exception as e:
+            print(f"An error occurred while saving the PDF: {e}")
     
     # If ever custom file naming convention is necessary
     # added username assessment id, and assessment_name for the file name to avoid errors

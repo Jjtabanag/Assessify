@@ -48,7 +48,7 @@ const ViewAssessment = () => {
         console.error("Error fetching assessment data:", error);
       }
     };
-    console.log("Assessment Data: " + assessmentData)
+    console.log("Assessment Data: " + assessmentData);
     fetchAssessmentData();
   }, [id, action]);
 
@@ -64,7 +64,7 @@ const ViewAssessment = () => {
     const formData = new FormData(form);
 
     for (let pair of formData.entries()) {
-        console.log('FormData: ' + pair[0] + ', '  + pair[1]);
+      console.log("FormData: " + pair[0] + ", " + pair[1]);
     }
 
     const tk = sessionStorage.getItem("token");
@@ -98,13 +98,60 @@ const ViewAssessment = () => {
       });
 
       console.log("Assessment saved:", response.data);
-      navigate(`/view-assessment/19?action=view`);
-      // Handle success, e.g., show a success message or redirect
+      navigate(`/view-assessment/${id}?action=view`);
     } catch (error) {
       console.error("Error saving assessment:", error);
-      // Handle error, e.g., show an error message
     }
   };
+
+  function handleExport(format) {
+    return function (event) {
+      const assessmentId = id; // Ensure 'id' is defined
+      const userId = user.userData; // Ensure 'user.userData' is defined
+
+      console.log(userId);
+
+      const exportUrl = `http://localhost:8000/export_assessment/${userId.id}?as=${assessmentId}&ff=${format}`;
+
+      fetch(exportUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"), // Assuming you have a function to get the CSRF token
+        },
+      })
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.download = `${assessmentId}_assessment.${
+            format === "gift" ? "txt" : format
+          }`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch((error) => console.error("Error:", error));
+    };
+  }
+
+  // Example of getting CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
 
   return (
     <>
@@ -129,13 +176,20 @@ const ViewAssessment = () => {
                     </h2>
                     <ol className="choiced-items" type="1">
                       {questions.map((question) => (
-                        <li className="item" key={question.id} style={{ marginBottom: '20px' }}>
-                          {question.question} <br />
+                        <li
+                          className="item"
+                          key={question.id}
+                          style={{ marginBottom: "20px" }}
+                        >
+                          {question.question} <br></br>
                           {question.options &&
                             question.options.map((option) => (
                               <div key={option.id}>
-                                {String.fromCharCode(65 + option.option_no)}.
-                                {option.option}
+                                <br></br>
+                                {String.fromCharCode(
+                                  65 + option.option_no
+                                )}. {option.option}
+                                <br></br>
                               </div>
                             ))}
                           {question.answer !== null && (
@@ -144,9 +198,11 @@ const ViewAssessment = () => {
                               <b className="answer">
                                 {" "}
                                 Answer:{" "}
-                                {String.fromCharCode(
-                                  65 + parseInt(question.answer)
-                                )}{" "}
+                                {question.answer.length === 1
+                                  ? String.fromCharCode(
+                                      65 + parseInt(question.answer)
+                                    )
+                                  : question.answer}
                               </b>
                             </>
                           )}
@@ -159,30 +215,36 @@ const ViewAssessment = () => {
               <br />
               <br />
               <h3>
-                <a href={`/export-assessment?as=${id}&ff=pdf`}>
-                  {" "}
-                  EXPORT (to PDF){" "}
-                </a>
-                <a
-                  href={`/export-assessment?as=${id}&ff=word`}
-                  style={{ paddingLeft: "100px" }}
+                <button
+                  data-format="pdf"
+                  className="generic-button-export"
+                  onClick={handleExport("pdf")}
                 >
-                  {" "}
-                  EXPORT (to WORD){" "}
-                </a>
-                <a
-                  href={`/export-assessment?as=${id}&ff=gift`}
-                  style={{ paddingLeft: "100px" }}
+                  EXPORT (to PDF)
+                </button>
+                <button
+                  data-format="word"
+                  style={{ marginLeft: "20px" }}
+                  className="generic-button-export"
+                  onClick={handleExport("word")}
                 >
-                  {" "}
-                  EXPORT (to GIFT){" "}
-                </a>
+                  EXPORT (to WORD)
+                </button>
+                <button
+                  data-format="gift"
+                  style={{ marginLeft: "20px" }}
+                  className="generic-button-export"
+                  onClick={handleExport("gift")}
+                >
+                  EXPORT (to GIFT)
+                </button>
                 <Link
                   to={`/view-assessment/${id}?action=edit`}
-                  style={{ paddingLeft: "100px" }}
+                  style={{ marginLeft: "100px" }}
+                  className="generic-button-export"
                 >
                   {" "}
-                  EDIT{" "}
+                  Edit Assessment{" "}
                 </Link>
               </h3>
             </div>
@@ -240,18 +302,18 @@ const ViewAssessment = () => {
                                 defaultValue={question.question}
                               />
                               <ol type="A">
-                              {question.options &&
-                              question.options.map((option) => (
-                                <li className="option" key={option.id}>
-                                  <label>Option</label>
-                                  <input
-                                    className="generic-form-textbox"
-                                    type="text"
-                                    name={`option_${option.id}_${option.option_no}`}
-                                    defaultValue={option.option}
-                                  />
-                                </li>
-                              ))}
+                                {question.options &&
+                                  question.options.map((option) => (
+                                    <li className="option" key={option.id}>
+                                      <label>Option</label>
+                                      <input
+                                        className="generic-form-textbox"
+                                        type="text"
+                                        name={`option_${option.id}_${option.option_no}`}
+                                        defaultValue={option.option}
+                                      />
+                                    </li>
+                                  ))}
                               </ol>
                               <br />
                               {question.type === "Multiple Choice" ? (
@@ -261,7 +323,9 @@ const ViewAssessment = () => {
                                     className="generic-form-textbox"
                                     type="text"
                                     name={`answerwc_${question.pk}`}
-                                    defaultValue={question.answer}
+                                    defaultValue={String.fromCharCode(
+                                      65 + parseInt(question.answer)
+                                    )}
                                   />
                                   <ol className="options" type="A">
                                     {question.options &&
@@ -284,9 +348,8 @@ const ViewAssessment = () => {
                                     className="generic-form-textbox"
                                     type="text"
                                     name={`answer_${question.id}`}
-                                    defaultValue={String.fromCharCode(
-                                      65 + parseInt(question.answer))  || ""}
-                                    style={{ marginBottom: '20px' }}
+                                    defaultValue={question.answer}
+                                    style={{ marginBottom: "20px" }}
                                   />
                                   <br />
                                 </>
@@ -298,10 +361,20 @@ const ViewAssessment = () => {
                     ))}
                   </div>
                 </div>
-                <button className="generic-button" type="submit">
-                  {" "}
-                  Save{" "}
-                </button>
+                <br></br>
+                <div className="button-container">
+                  <Link
+                    className="generic-button-export"
+                    to={`/view-assessment/${id}?action=view`}
+                  >
+                    {" "}
+                    Cancel{" "}
+                  </Link>
+                  <button className="generic-button-export" type="submit">
+                    {" "}
+                    Save{" "}
+                  </button>
+                </div>
               </div>
             </form>
           )}

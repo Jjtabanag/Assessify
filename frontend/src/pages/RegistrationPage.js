@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useContext, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import RegisterPopup from "../components/RegisterPopup";
 import UserContext from "../contexts/UserContext";
@@ -23,66 +23,39 @@ const RegistrationPage = () => {
     withCredentials: true,
   });
 
-  // This will always redirect back to login page when user has not logged in yet
-
-  // useEffect(() => {
-  //   if (user.isAuthenticated) {
-  //     navigate("/home");
-  //   }
-  // }, [user, navigate]);
-
-  // useEffect(() => {
-  //   const csrfToken = document.cookie
-  //     .split("; ")
-  //     .find((row) => row.startsWith("csrftoken"))
-  //     ?.split("=")[1];
-
-  //   if (csrfToken) {
-  //     setToken(csrfToken);
-  //   } else {
-  //     setError("CSRF token not found. Please refresh the page and try again.");
-  //   }
-
-  //   if (user) {
-  //     navigate("/home");
-  //     return;
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   if (user.isAuthenticated) {
-  //     navigate("/home");
-  //   }
-  // }, [user, navigate]);
-
-  // useEffect(() => {
-  //   const csrfToken = document.cookie
-  //     .split("; ")
-  //     .find((row) => row.startsWith("csrftoken"))
-  //     ?.split("=")[1];
-
-  //   if (csrfToken) {
-  //     setToken(csrfToken);
-  //   } else {
-  //     setError("CSRF token not found. Please refresh the page and try again.");
-  //   }
-
-  //   if (user) {
-  //     navigate("/home");
-  //     return;
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (user.isAuthenticated) {
+      navigate("/home");
+    }
+  }, [user, navigate]);
 
   const handleRegistration = async (event) => {
     event.preventDefault();
 
-    if (!token) {
+    const csrfToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrftoken"))
+      ?.split("=")[1];
+    if (!csrfToken) {
+      console.log(
+        "CSRF token not found. Please refresh the page and try again."
+      );
       setError("CSRF token not found. Please try again.");
       return;
     }
 
-    if (!token) {
-      setError("CSRF token not found. Please try again.");
+    if (
+      email === "" ||
+      username === "" ||
+      password === "" ||
+      repassword === ""
+    ) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    if (password !== repassword) {
+      setError("Passwords do not match");
       return;
     }
 
@@ -98,10 +71,11 @@ const RegistrationPage = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": token,
+            "X-CSRFToken": csrfToken,
           },
         }
       );
+
       if (response.status === 201) {
         // Registration successful, handle accordingly
         setEmail("");
@@ -112,9 +86,22 @@ const RegistrationPage = () => {
         console.log("Registration successful");
       }
     } catch (error) {
-      setError(error.response.data.message);
-      console.log("Error registering");
-      console.error("Error:", error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+        setError(error.response.data);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.log(error.request);
+        setError("No response from server. Please try again.");
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error", error.message);
+        setError("An error occurred. Please try again.");
+      }
     }
   };
 

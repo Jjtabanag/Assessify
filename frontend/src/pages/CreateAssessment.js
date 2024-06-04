@@ -135,7 +135,12 @@ const CreateAssessmentPage = () => {
         ...prevSections,
         <div key={sectionCounter}>
           <AssessmentSection sectionCounter={sectionCounter} />
-          <button onClick={() => removeSection(sectionCounter - 1)}>X</button>
+          <button
+            className="learning-outcome-delete-button"
+            onClick={() => removeSection(sectionCounter - 1)}
+          >
+            Remove Learning Outcome
+          </button>
         </div>,
       ]);
     }
@@ -408,7 +413,12 @@ const CreateAssessmentPage = () => {
                 </div>
               ) : (
                 <div>
-                  <button onClick={addNewSection}>Add new section</button>
+                  <button
+                    className="custom-file-button"
+                    onClick={addNewSection}
+                  >
+                    Add new section
+                  </button>
                   <div id="assessment-section-container">{sections}</div>
                 </div>
               )}
